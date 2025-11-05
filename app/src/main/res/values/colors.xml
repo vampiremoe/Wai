@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base colors -->
-    <color name="colorPrimary">#C6FF00</color> <!-- bright lime -->
-    <color name="colorOnPrimary">#000000</color>
-    <color name="colorSecondary">#00BCD4</color> <!-- cyan -->
-    <color name="colorError">#FF1744</color> <!-- red -->
-    <color name="colorSurface">#121212</color>
-    <color name="colorBackground">#000000</color>
-    <color name="colorOnBackground">#FFFFFF</color>
-    <color name="colorCard">#1E1E1E</color>
+    <!-- Material 3 color palette -->
+    <color name="md_theme_primary">#C6FF00</color>      <!-- bright lime -->
+    <color name="md_theme_onPrimary">#000000</color>
+    <color name="md_theme_secondary">#00BCD4</color>    <!-- cyan -->
+    <color name="md_theme_onSecondary">#000000</color>
+    <color name="md_theme_error">#FF1744</color>        <!-- red -->
+    <color name="md_theme_background">#000000</color>   <!-- pitch black -->
+    <color name="md_theme_onBackground">#FFFFFF</color>
+    <color name="md_theme_surface">#121212</color>
+    <color name="md_theme_onSurface">#FFFFFF</color>
 
-    <!-- Button text -->
+    <!-- Button and card accents -->
+    <color name="card_bg">#1E1E1E</color>
     <color name="buttonText">#FFFFFF</color>
 </resources>
