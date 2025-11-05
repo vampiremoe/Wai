@@ -9,19 +9,19 @@ import java.util.ArrayList;
 public class Decoder {
     ArrayList<KVP> kvps;
     private String lastPasswordId;
-    private int lastPassword;
+    private int lassPassword;
 
     public Decoder() {
         kvps = new ArrayList<>();
-        lastPassword = 0;
+        lassPassword = 0;
         lastPasswordId = "";
     }
 
     /**
      * Attempts to decode the encrypted file identified by currentPath and save it into parentFolder with fileName.
-     * Returns true on success, false on failure.
+     * Returns the absolute saved path on success, or null on failure.
      */
-    public boolean decodeAndSave(String fileName, String currentPath, String passwordId, String fileExt, String whereSave) {
+    public String decodeAndSave(String fileName, String currentPath, String passwordId, String fileExt, String whereSave) {
         int key = -1;
 
         if (!currentPath.endsWith(".bin")) {
@@ -33,12 +33,12 @@ public class Decoder {
         }
 
         if (passwordId.equalsIgnoreCase(lastPasswordId)) {
-            key = lastPassword;
+            key = lassPassword;
         } else {
             for (KVP kvp : kvps) {
                 if (kvp.key.equalsIgnoreCase(passwordId)) {
                     key = kvp.value;
-                    lastPassword = key;
+                    lassPassword = key;
                     lastPasswordId = passwordId;
                     break;
                 }
@@ -47,55 +47,57 @@ public class Decoder {
 
         if (key < 0) {
             byte[] bytes = new byte[12];
-            try (FileInputStream fis = new FileInputStream(new File(currentPath))) {
-                fis.read(bytes);
+            try (FileInputStream fileInputStream = new FileInputStream(new File(currentPath))) {
+                fileInputStream.read(bytes);
                 String[] extKey = KeyFinder.find(bytes, fileExt);
                 if (extKey[0].endsWith(fileExt)) {
                     key = Integer.parseInt(extKey[1]);
-                    lastPassword = key;
+                    lassPassword = key;
                     lastPasswordId = passwordId;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                return null;
             }
         }
 
-        if (key < 0) return false;
+        if (key < 0) return null;
 
         try {
-            decodeAndSaveImpl(currentPath, key, fileName, whereSave);
-            return true;
+            return decodeAndSaveImpl(currentPath, key, fileName, whereSave);
         } catch (IOException e) {
-            return false;
+            return null;
         }
     }
 
-    private void decodeAndSaveImpl(String currentPath, int key, String fileName, String parentFolder) throws IOException {
+    private String decodeAndSaveImpl(String currentPath, int key, String fileName, String parentFolder) throws IOException {
         File saveFile = new File(parentFolder, fileName);
         for (int i = 0; saveFile.exists(); i++) {
             saveFile = new File(parentFolder, "(" + i + ") " + fileName);
         }
 
-        try (FileInputStream fis = new FileInputStream(new File(currentPath));
-             FileOutputStream fos = new FileOutputStream(saveFile)) {
+        try (FileInputStream fileInputStream = new FileInputStream(new File(currentPath));
+             FileOutputStream fileOutputStream = new FileOutputStream(saveFile)) {
 
             byte[] bytes = new byte[128];
-            fis.read(bytes);
+            fileInputStream.read(bytes);
             for (int i = 0; i < bytes.length; i++) {
                 bytes[i] = (byte) (bytes[i] ^ key);
             }
-            fos.write(bytes);
+            fileOutputStream.write(bytes);
 
-            while (fis.available() > 262144) {
+            while (fileInputStream.available() > 262144) {
                 byte[] b256kB = new byte[262144];
-                fis.read(b256kB);
-                fos.write(b256kB);
+                fileInputStream.read(b256kB);
+                fileOutputStream.write(b256kB);
             }
 
-            byte[] bRemaining = new byte[fis.available()];
-            fis.read(bRemaining);
-            fos.write(bRemaining);
+            byte[] bXkB = new byte[fileInputStream.available()];
+            fileInputStream.read(bXkB);
+            fileOutputStream.write(bXkB);
         }
+
+        return saveFile.getAbsolutePath();
     }
 
     class KVP {
