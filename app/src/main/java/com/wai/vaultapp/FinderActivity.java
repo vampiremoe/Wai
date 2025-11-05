@@ -8,20 +8,21 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.snackbar.Snackbar;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -31,7 +32,6 @@ public class FinderActivity extends AppCompatActivity {
     Button blastBtn, encryptBtn, decryptBtn;
     ScrollView scrollView;
     ProgressBar progressBar;
-
     private static final int REQ_PERM = 1;
 
     @Override
@@ -57,93 +57,108 @@ public class FinderActivity extends AppCompatActivity {
             }
             new Thread(() -> {
                 disableButtons();
-                initBlast();
+                scanVault();
                 enableButtons();
             }).start();
         });
 
-        decryptBtn.setOnClickListener(v -> askDecryptMode());
-        encryptBtn.setOnClickListener(v -> Snackbar.make(scrollView, "Encryption feature not yet migrated", Snackbar.LENGTH_SHORT).show());
+        encryptBtn.setOnClickListener(v -> Snackbar.make(scrollView, "Encrypt feature coming soon", Snackbar.LENGTH_SHORT).show());
+        decryptBtn.setOnClickListener(v -> Snackbar.make(scrollView, "Decrypt feature coming soon", Snackbar.LENGTH_SHORT).show());
     }
 
-    private void askDecryptMode() {
-        new AlertDialog.Builder(this)
-                .setTitle("Decrypt Options")
-                .setMessage("Would you like to decrypt other than QAVault?")
-                .setPositiveButton("Yes", (d, w) -> Snackbar.make(scrollView, "Custom decrypt flow coming soon", Snackbar.LENGTH_SHORT).show())
-                .setNegativeButton("No", (d, w) -> new Thread(() -> {
-                    disableButtons();
-                    initBlast();
-                    enableButtons();
-                }).start())
-                .show();
-    }
-
-    private void initBlast() {
+    private void scanVault() {
         try {
-            appendLog("Starting vault scan...");
-            File file = new File(Environment.getExternalStorageDirectory(), "SystemAndroid/Data");
-            File whereSave = new File(Environment.getExternalStorageDirectory(), "waivault/decrypt");
-            if (!whereSave.exists()) whereSave.mkdirs();
-            Log.i("FindX", file.getAbsolutePath());
-
-            File[] fileList = file.listFiles();
-            if (fileList == null) {
-                appendLog("Cannot find Vault folder. Please check permissions.");
+            appendLog("Scanning vault...");
+            File sourceDir = new File(Environment.getExternalStorageDirectory(), "SystemAndroid/Data");
+            if (!sourceDir.exists()) {
+                appendLog("Vault folder not found.");
                 return;
             }
 
-            String dbPath = null;
-            for (File f : fileList) {
-                if (f.isDirectory() || f.getAbsolutePath().endsWith("journal")) continue;
-                try (FileInputStream fis = new FileInputStream(f)) {
-                    byte[] bytes = new byte[10];
-                    fis.read(bytes);
-                    if (new String(bytes).startsWith("SQLite")) {
-                        dbPath = f.getAbsolutePath();
-                        break;
-                    }
-                } catch (Exception ignored) {}
+            File destBase = new File(Environment.getExternalStorageDirectory(), "waivault");
+            File encryptDir = new File(destBase, "encrypt");
+            File decryptDir = new File(destBase, "decrypt");
+
+            String[] types = {"image", "video", "other"};
+            for (String t : types) {
+                new File(encryptDir, t).mkdirs();
+                new File(decryptDir, t).mkdirs();
             }
 
-            if (dbPath == null) {
-                appendLog("Cannot find Vault database.");
+            File[] files = sourceDir.listFiles();
+            if (files == null) {
+                appendLog("No files found in vault folder.");
                 return;
             }
 
-            SQLiteDatabase db = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY);
-            Cursor cursor = db.rawQuery("SELECT password_id,file_name_from,file_path_new,file_type FROM hideimagevideo", null);
-            if (cursor.getCount() == 0) {
-                appendLog("No images or videos found in database.");
-                return;
-            }
-
-            appendLog("Found " + cursor.getCount() + " item(s) in the vault.");
             Decoder decoder = new Decoder();
 
-            for (int i = 0; i < cursor.getCount(); i++) {
-                cursor.moveToPosition(i);
-                appendLog("Decoding " + (i + 1) + " of " + cursor.getCount() + "...");
-                String savedPath = decoder.decodeAndSave(
-                        cursor.getString(1),
-                        cursor.getString(2),
-                        cursor.getString(0),
-                        cursor.getString(3),
-                        whereSave.getAbsolutePath()
-                );
+            for (File f : files) {
+                if (f.isDirectory()) continue;
+
+                String ext = "";
+                int dot = f.getName().lastIndexOf('.');
+                if (dot >= 0) ext = f.getName().substring(dot + 1).toLowerCase();
+
+                String typeFolder;
+                if (ext.equals("jpg") || ext.equals("jpeg") || ext.equals("png") || ext.equals("gif")) {
+                    typeFolder = "image";
+                } else if (ext.equals("mp4") || ext.equals("avi") || ext.equals("mov")) {
+                    typeFolder = "video";
+                } else {
+                    typeFolder = "other";
+                }
+
+                String savedPath = decoder.decodeAndSave(f.getName(), f.getAbsolutePath(), "default", ext, new File(encryptDir, typeFolder).getAbsolutePath());
                 if (savedPath != null) {
                     appendLog("Saved: " + savedPath);
+                    // Optional: Open viewer if image/video
+                    if (typeFolder.equals("image") || typeFolder.equals("video")) {
+                        openFile(savedPath, typeFolder);
+                    }
                 } else {
-                    appendLog("Decoding failed: " + cursor.getString(1));
+                    appendLog("Failed: " + f.getName());
                 }
             }
-            appendLog("\nDecoding finished. All files saved in:\n" + whereSave.getAbsolutePath());
-            cursor.close();
-            db.close();
-
+            appendLog("Vault scan completed.");
         } catch (Exception e) {
             appendLog("Error: " + e.getMessage());
         }
+    }
+
+    private void openFile(String path, String type) {
+        try {
+            File file = new File(path);
+            Uri uri = Uri.fromFile(file);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            if (type.equals("image")) intent.setDataAndType(uri, "image/*");
+            else if (type.equals("video")) intent.setDataAndType(uri, "video/*");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } catch (Exception e) {
+            appendLog("Cannot open file: " + path);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.menu_themes) {
+            String[] themes = {"Dark", "Light", "Kaki"};
+            new AlertDialog.Builder(this)
+                    .setTitle("Select Theme")
+                    .setItems(themes, (dialog, which) -> {
+                        Toast.makeText(this, "Selected: " + themes[which], Toast.LENGTH_SHORT).show();
+                        // TODO: Apply theme
+                    }).show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private boolean hasPermission() {
