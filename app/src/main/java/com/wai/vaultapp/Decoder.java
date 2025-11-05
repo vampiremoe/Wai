@@ -9,14 +9,18 @@ import java.util.ArrayList;
 public class Decoder {
     ArrayList<KVP> kvps;
     private String lastPasswordId;
-    private int lassPassword;
+    private int lastPassword;
 
     public Decoder() {
         kvps = new ArrayList<>();
-        lassPassword = 0;
+        lastPassword = 0;
         lastPasswordId = "";
     }
 
+    /**
+     * Attempts to decode the encrypted file identified by currentPath and save it into parentFolder with fileName.
+     * Returns true on success, false on failure.
+     */
     public boolean decodeAndSave(String fileName, String currentPath, String passwordId, String fileExt, String whereSave) {
         int key = -1;
 
@@ -29,12 +33,12 @@ public class Decoder {
         }
 
         if (passwordId.equalsIgnoreCase(lastPasswordId)) {
-            key = lassPassword;
+            key = lastPassword;
         } else {
             for (KVP kvp : kvps) {
                 if (kvp.key.equalsIgnoreCase(passwordId)) {
                     key = kvp.value;
-                    lassPassword = key;
+                    lastPassword = key;
                     lastPasswordId = passwordId;
                     break;
                 }
@@ -48,7 +52,7 @@ public class Decoder {
                 String[] extKey = KeyFinder.find(bytes, fileExt);
                 if (extKey[0].endsWith(fileExt)) {
                     key = Integer.parseInt(extKey[1]);
-                    lassPassword = key;
+                    lastPassword = key;
                     lastPasswordId = passwordId;
                 }
             } catch (Exception e) {
@@ -59,14 +63,14 @@ public class Decoder {
         if (key < 0) return false;
 
         try {
-            return decodeAndSaveImpl(currentPath, key, fileName, whereSave);
+            decodeAndSaveImpl(currentPath, key, fileName, whereSave);
+            return true;
         } catch (IOException e) {
-            e.printStackTrace();
             return false;
         }
     }
 
-    private boolean decodeAndSaveImpl(String currentPath, int key, String fileName, String parentFolder) throws IOException {
+    private void decodeAndSaveImpl(String currentPath, int key, String fileName, String parentFolder) throws IOException {
         File saveFile = new File(parentFolder, fileName);
         for (int i = 0; saveFile.exists(); i++) {
             saveFile = new File(parentFolder, "(" + i + ") " + fileName);
@@ -77,7 +81,9 @@ public class Decoder {
 
             byte[] bytes = new byte[128];
             fis.read(bytes);
-            for (int i = 0; i < bytes.length; i++) bytes[i] = (byte) (bytes[i] ^ key);
+            for (int i = 0; i < bytes.length; i++) {
+                bytes[i] = (byte) (bytes[i] ^ key);
+            }
             fos.write(bytes);
 
             while (fis.available() > 262144) {
@@ -86,12 +92,10 @@ public class Decoder {
                 fos.write(b256kB);
             }
 
-            byte[] remaining = new byte[fis.available()];
-            fis.read(remaining);
-            fos.write(remaining);
+            byte[] bRemaining = new byte[fis.available()];
+            fis.read(bRemaining);
+            fos.write(bRemaining);
         }
-
-        return true;
     }
 
     class KVP {
