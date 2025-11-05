@@ -1,16 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:layout_margin="4dp"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:background="#000000"
+    android:gravity="center"
+    android:padding="8dp">
 
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center"
+        android:id="@+id/splash_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="@string/app_name"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display2" />
+        android:textColor="#BEBEBE"
+        android:textStyle="bold"
+        android:textSize="36sp"
+        android:fontFamily="sans-serif"
+        android:shadowColor="#66000000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="4"/>
 </LinearLayout>
