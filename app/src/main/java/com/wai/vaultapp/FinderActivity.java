@@ -171,24 +171,26 @@ public class FinderActivity extends AppCompatActivity {
         }
     }
 
-    private void processAndEncryptUri(Uri uri) throws IOException {
-        // copy content:// uri to temp file
-        String displayName = getDisplayNameForUri(uri);
-        if (displayName == null) displayName = "unknown";
-        File temp = new File(getCacheDir(), "tmp_" + System.currentTimeMillis() + "_" + displayName);
-        try (InputStream in = getContentResolver().openInputStream(uri);
-             OutputStream out = new FileOutputStream(temp)) {
-            byte[] buf = new byte[8192];
-            int r;
-            while ((r = in.read(buf)) != -1) {
-                out.write(buf, 0, r);
-            }
-            out.flush();
-        } catch (Exception e){
-            appendLog("Failed to copy selected file: " + displayName);
-            if (temp.exists()) temp.delete();
-            return;
+    private String processAndEncryptUri(Uri uri) throws IOException {
+    String displayName = getDisplayNameForUri(uri);
+    if (displayName == null) displayName = "unknown";
+    File temp = new File(getCacheDir(), "tmp_" + System.currentTimeMillis() + "_" + displayName);
+    try (InputStream in = getContentResolver().openInputStream(uri);
+         OutputStream out = new FileOutputStream(temp)) {
+        byte[] buf = new byte[8192];
+        int r;
+        while ((r = in.read(buf)) != -1) {
+            out.write(buf, 0, r);
         }
+        out.flush();
+    } catch (Exception e) {
+        appendLog("Failed to copy selected file: " + displayName);
+        if (temp.exists()) temp.delete();
+        return null; // return null on failure
+    }
+    return temp.getAbsolutePath(); // return the file path
+}
+
 
         // determine type
         String type = getContentResolver().getType(uri);
