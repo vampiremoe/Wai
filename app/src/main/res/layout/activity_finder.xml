@@ -15,7 +15,19 @@
         app:title="Wai Vault"
         app:titleTextColor="@color/md_theme_primary"
         android:elevation="6dp" />
-
+    
+    <!-- Lime progress bar -->
+<ProgressBar
+    android:id="@+id/progress_bar"
+    style="?android:attr/progressBarStyleHorizontal"
+    android:layout_width="match_parent"
+    android:layout_height="4dp"
+    android:indeterminate="true"
+    android:visibility="gone"
+    android:progressTint="@color/md_theme_primary"
+    android:indeterminateTint="@color/md_theme_primary"
+    android:layout_marginBottom="4dp" />
+    
     <!-- Card container -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
