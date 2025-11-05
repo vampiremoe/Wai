@@ -243,4 +243,25 @@ public class FinderActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+    @Override
+public boolean onCreateOptionsMenu(Menu menu) {
+    getMenuInflater().inflate(R.menu.main_menu, menu);
+    return true;
+}
+
+@Override
+public boolean onOptionsItemSelected(MenuItem item) {
+    if (item.getItemId() == R.id.action_themes) {
+        // TODO: show theme selection dialog
+        new AlertDialog.Builder(this)
+            .setTitle("Select Theme")
+            .setItems(new String[]{"Dark", "Light", "Kaki", "Custom"}, (dialog, which) -> {
+                // handle theme change
+                Snackbar.make(scrollView, "Theme changed (demo)", Snackbar.LENGTH_SHORT).show();
+            })
+            .show();
+        return true;
+    }
+    return super.onOptionsItemSelected(item);
+}
 }
