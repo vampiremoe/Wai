@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@color/md_theme_background">
 
-    <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -17,7 +16,6 @@
         android:elevation="8dp"
         app:navigationIconTint="@color/md_theme_primary" />
 
-    <!-- ProgressBar -->
     <ProgressBar
         android:id="@+id/progress_bar"
         style="?android:attr/progressBarStyleHorizontal"
@@ -27,16 +25,15 @@
         android:visibility="gone"
         android:progressTint="@color/md_theme_primary"
         android:indeterminateTint="@color/md_theme_primary"
-        android:layout_marginBottom="6dp" />
+        android:layout_marginBottom="4dp" />
 
-    <!-- Card container -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         app:cardCornerRadius="16dp"
-        app:cardElevation="8dp"
-        android:backgroundTint="@color/md_theme_surface">
+        app:cardElevation="4dp"
+        android:backgroundTint="@color/card_bg">
 
         <LinearLayout
             android:orientation="vertical"
@@ -45,52 +42,44 @@
             android:padding="16dp"
             android:gravity="center">
 
-            <!-- Buttons without android:cornerRadius -->
-            <com.google.android.material.button.MaterialButton
+            <Button
                 android:id="@+id/blast"
-                style="@style/Widget.Material3.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Scan Vault"
                 android:textColor="@color/buttonText"
                 android:backgroundTint="@color/md_theme_error"
-                android:layout_marginBottom="12dp"
-                android:paddingVertical="12dp"
-                app:cornerRadius="12dp" />
+                android:layout_marginBottom="10dp"
+                android:padding="10dp" />
 
-            <com.google.android.material.button.MaterialButton
+            <Button
                 android:id="@+id/decrypt_btn"
-                style="@style/Widget.Material3.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Decrypt Files"
                 android:textColor="@color/buttonText"
                 android:backgroundTint="@color/md_theme_primary"
-                android:layout_marginBottom="12dp"
-                android:paddingVertical="12dp"
-                app:cornerRadius="12dp" />
+                android:layout_marginBottom="10dp"
+                android:padding="10dp" />
 
-            <com.google.android.material.button.MaterialButton
+            <Button
                 android:id="@+id/encrypt_btn"
-                style="@style/Widget.Material3.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Encrypt Files"
                 android:textColor="@color/buttonText"
                 android:backgroundTint="@color/md_theme_secondary"
-                android:paddingVertical="12dp"
-                app:cornerRadius="12dp" />
+                android:padding="10dp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Scrollable Logs -->
     <ScrollView
         android:id="@+id/scroll_log"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:layout_margin="12dp"
-        android:backgroundTint="@color/md_theme_surface"
+        android:background="@color/card_bg"
         android:padding="10dp">
 
         <TextView
@@ -101,5 +90,4 @@
             android:textColor="@color/md_theme_onSurface"
             android:textSize="14sp" />
     </ScrollView>
-
 </LinearLayout>
