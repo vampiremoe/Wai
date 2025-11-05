@@ -139,11 +139,108 @@ public class FinderActivity extends AppCompatActivity {
                 String name = f.getName();
                 String ext = "";
                 int dot = name.lastIndexOf(".");
-                if (dot != -1) ext = name.substring(dot +
-                .setItems(themes, (dialog, which) -> {
-                    Snackbar.make(scrollView, "Theme " + themes[which] + " applied!", Snackbar.LENGTH_SHORT).show();
-                    // Save in preferences and apply colors dynamically
-                })
-                .show();
+                if (dot != -1) ext = name.substring(dot + 1).toLowerCase();
+
+                File outDir = new File(outBase, classify(ext));
+                if (!outDir.exists()) outDir.mkdirs();
+
+                String savedPath;
+                if (encrypt) {
+                    Encoder encoder = new Encoder();
+                    savedPath = encoder.encodeAndSave(name, f.getAbsolutePath(), outDir.getAbsolutePath());
+                } else {
+                    Decoder decoder = new Decoder();
+                    savedPath = decoder.decodeAndSave(name, f.getAbsolutePath(), "default", ext, outDir.getAbsolutePath());
+                }
+
+                if (savedPath != null) {
+                    appendLog((encrypt ? "Encrypted: " : "Decrypted: ") + savedPath);
+                    openMediaFile(savedPath); // optional, open automatically
+                } else {
+                    appendLog((encrypt ? "Encryption failed: " : "Decryption failed: ") + name);
+                }
+            }
+        } catch (Exception e) {
+            appendLog("Error: " + e.getMessage());
+        }
+    }
+
+    private String classify(String ext) {
+        if (ext.matches("jpg|jpeg|png|gif|bmp")) return "images";
+        if (ext.matches("mp4|mkv|avi|mov")) return "videos";
+        return "other";
+    }
+
+    private void openMediaFile(String path) {
+        try {
+            File f = new File(path);
+            Uri uri = Uri.fromFile(f);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            if (path.matches(".*\\.(jpg|jpeg|png|gif|bmp)$")) intent.setDataAndType(uri, "image/*");
+            else if (path.matches(".*\\.(mp4|mkv|avi|mov)$")) intent.setDataAndType(uri, "video/*");
+            else intent.setDataAndType(uri, "*/*");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } catch (Exception e) {
+            runOnUiThread(() -> Toast.makeText(this, "Cannot open media: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        }
+    }
+
+    private boolean hasPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void getPermission() {
+        if (!hasPermission()) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQ_PERM);
+        }
+    }
+
+    private void disableButtons() {
+        runOnUiThread(() -> {
+            blastBtn.setEnabled(false);
+            encryptBtn.setEnabled(false);
+            decryptBtn.setEnabled(false);
+            progressBar.setVisibility(View.VISIBLE);
+        });
+    }
+
+    private void enableButtons() {
+        runOnUiThread(() -> {
+            blastBtn.setEnabled(true);
+            encryptBtn.setEnabled(true);
+            decryptBtn.setEnabled(true);
+            progressBar.setVisibility(View.GONE);
+        });
+    }
+
+    private void appendLog(String msg) {
+        runOnUiThread(() -> {
+            logs.append(msg + "\n");
+            scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
+        });
+    }
+
+    public static String getDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss");
+        return sdf.format(new Date());
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_theme) {
+            // TODO: implement theme change logic
+            Toast.makeText(this, "Theme customization coming soon", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
