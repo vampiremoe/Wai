@@ -15,4 +15,17 @@
         android:strokeColor="#C6FF00"
         android:strokeWidth="5"
         android:strokeAlpha="0.9"
-        android:fil
+        android:fillColor="@android:color/transparent"
+        android:pathData="M54,16A38,38 0 1,1 16,54A38,38 0 0,1 54,16z" />
+
+    <!-- Center dial -->
+    <path
+        android:fillColor="#C6FF00"
+        android:pathData="M54,44a10,10 0 1,1 -10,10a10,10 0 0,1 10,-10z" />
+
+    <!-- Small cross lines -->
+    <path
+        android:strokeColor="#C6FF00"
+        android:strokeWidth="3"
+        android:pathData="M54,28 L54,40 M54,68 L54,80 M40,54 L28,54 M68,54 L80,54" />
+</vector>
