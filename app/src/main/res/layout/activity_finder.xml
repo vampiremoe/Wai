@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@color/md_theme_background">
 
-    <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -15,9 +14,8 @@
         app:title="Wai Vault"
         app:titleTextColor="@color/md_theme_primary"
         android:elevation="6dp"
-        app:popupTheme="@style/ThemeOverlay.Material3.ActionBar"/>
+        app:menu="@menu/main_menu" />
 
-    <!-- Progress bar -->
     <ProgressBar
         android:id="@+id/progress_bar"
         style="?android:attr/progressBarStyleHorizontal"
@@ -29,7 +27,6 @@
         android:indeterminateTint="@color/md_theme_primary"
         android:layout_marginBottom="4dp" />
 
-    <!-- Card container -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -54,44 +51,40 @@
                 android:shadowColor="#000000"
                 android:shadowDx="1"
                 android:shadowDy="1"
-                android:shadowRadius="1"
+                android:shadowRadius="2"
                 android:backgroundTint="@color/md_theme_error"
                 android:layout_marginBottom="10dp"
-                android:padding="12dp"
-                android:stateListAnimator="@null" />
+                android:padding="10dp" />
 
             <Button
                 android:id="@+id/decrypt_btn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Decrypt Files"
-                android:textColor="@color/buttonText"
-                android:shadowColor="#000000"
+                android:textColor="#000000"
+                android:shadowColor="#FFFFFF"
                 android:shadowDx="1"
                 android:shadowDy="1"
-                android:shadowRadius="1"
+                android:shadowRadius="2"
                 android:backgroundTint="@color/kaki"
                 android:layout_marginBottom="10dp"
-                android:padding="12dp"
-                android:stateListAnimator="@null" />
+                android:padding="10dp" />
 
             <Button
                 android:id="@+id/encrypt_btn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Encrypt Files"
-                android:textColor="@color/buttonText"
-                android:shadowColor="#000000"
+                android:textColor="#000000"
+                android:shadowColor="#FFFFFF"
                 android:shadowDx="1"
                 android:shadowDy="1"
-                android:shadowRadius="1"
+                android:shadowRadius="2"
                 android:backgroundTint="@color/md_theme_secondary"
-                android:padding="12dp"
-                android:stateListAnimator="@null" />
+                android:padding="10dp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Log view -->
     <ScrollView
         android:id="@+id/scroll_log"
         android:layout_width="match_parent"
@@ -110,3 +103,4 @@
             android:textSize="14sp" />
     </ScrollView>
 </LinearLayout>
+
