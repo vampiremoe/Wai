@@ -16,10 +16,18 @@ public class Decoder {
         lastPasswordId = "";
     }
 
-    public boolean decodeAndSave(String fileName, String currentPath, String passwordId,String fileExt, String whereSave){
+    /**
+     * Attempts to decode the encrypted file identified by currentPath and save it into parentFolder with fileName.
+     * Returns the absolute saved path on success, or null on failure.
+     */
+    public String decodeAndSave(String fileName, String currentPath, String passwordId,String fileExt, String whereSave){
         int key  = -1;
         if(!currentPath.endsWith(".bin")){
-            currentPath = currentPath.substring(0,currentPath.lastIndexOf("."))+".bin";
+            if(currentPath.contains(".")){
+                currentPath = currentPath.substring(0,currentPath.lastIndexOf("."))+".bin";
+            } else {
+                currentPath = currentPath + ".bin";
+            }
         }
         if(passwordId.equalsIgnoreCase(lastPasswordId)){
             key = lassPassword;
@@ -53,15 +61,15 @@ public class Decoder {
 
         }
         if(key<0)
-            return false;
+            return null;
         try {
             return decodeAndSaveImpl(currentPath,key,fileName,whereSave);
         } catch (IOException e) {
-            return false;
+            return null;
         }
     }
 
-    private boolean decodeAndSaveImpl(String currentPath, int key,String fileName,String parentFolder) throws IOException {
+    private String decodeAndSaveImpl(String currentPath, int key,String fileName,String parentFolder) throws IOException {
         File saveFile = new File(parentFolder,fileName);
         for(int i=0;saveFile.exists();i++){
             saveFile = new File(parentFolder,"("+i+") "+fileName);
@@ -85,7 +93,7 @@ public class Decoder {
         fileInputStream.close();
         fileOutputStream.close();
 
-        return true;
+        return saveFile.getAbsolutePath();
     }
 
     class KVP{
