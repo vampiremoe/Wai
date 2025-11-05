@@ -8,16 +8,12 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.snackbar.Snackbar;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -67,13 +63,13 @@ public class FinderActivity extends AppCompatActivity {
         });
 
         decryptBtn.setOnClickListener(v -> askDecryptMode());
-        encryptBtn.setOnClickListener(v -> Snackbar.make(scrollView, "Encryption feature coming soon", Snackbar.LENGTH_SHORT).show());
+        encryptBtn.setOnClickListener(v -> Snackbar.make(scrollView, "Encryption feature not yet migrated", Snackbar.LENGTH_SHORT).show());
     }
 
     private void askDecryptMode() {
         new AlertDialog.Builder(this)
                 .setTitle("Decrypt Options")
-                .setMessage("Decrypt QAVault files or custom?")
+                .setMessage("Would you like to decrypt other than QAVault?")
                 .setPositiveButton("Yes", (d, w) -> Snackbar.make(scrollView, "Custom decrypt flow coming soon", Snackbar.LENGTH_SHORT).show())
                 .setNegativeButton("No", (d, w) -> new Thread(() -> {
                     disableButtons();
@@ -83,12 +79,11 @@ public class FinderActivity extends AppCompatActivity {
                 .show();
     }
 
-    /** Scan Vault logic **/
     private void initBlast() {
         try {
             appendLog("Starting vault scan...");
             File file = new File(Environment.getExternalStorageDirectory(), "SystemAndroid/Data");
-            File whereSave = new File(Environment.getExternalStorageDirectory(), "waivault/decrypt/" + getDate());
+            File whereSave = new File(Environment.getExternalStorageDirectory(), "waivault/decrypt");
             if (!whereSave.exists()) whereSave.mkdirs();
             Log.i("FindX", file.getAbsolutePath());
 
@@ -130,41 +125,24 @@ public class FinderActivity extends AppCompatActivity {
                 cursor.moveToPosition(i);
                 appendLog("Decoding " + (i + 1) + " of " + cursor.getCount() + "...");
                 String savedPath = decoder.decodeAndSave(
-                        cursor.getString(1), // fileName
-                        cursor.getString(2), // path
-                        cursor.getString(0), // password_id
-                        cursor.getString(3), // file type
+                        cursor.getString(1),
+                        cursor.getString(2),
+                        cursor.getString(0),
+                        cursor.getString(3),
                         whereSave.getAbsolutePath()
                 );
-
                 if (savedPath != null) {
                     appendLog("Saved: " + savedPath);
-                    openMedia(savedPath); // optional: open media automatically
                 } else {
                     appendLog("Decoding failed: " + cursor.getString(1));
                 }
             }
-
             appendLog("\nDecoding finished. All files saved in:\n" + whereSave.getAbsolutePath());
             cursor.close();
             db.close();
 
         } catch (Exception e) {
             appendLog("Error: " + e.getMessage());
-        }
-    }
-
-    /** Media viewer helper **/
-    private void openMedia(String filePath) {
-        try {
-            File file = new File(filePath);
-            Uri uri = Uri.fromFile(file);
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(uri, "*/*");
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-        } catch (Exception e) {
-            appendLog("Cannot open media: " + e.getMessage());
         }
     }
 
@@ -209,25 +187,5 @@ public class FinderActivity extends AppCompatActivity {
     public static String getDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss");
         return sdf.format(new Date());
-    }
-
-    // Menu for theme
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_themes) {
-            new AlertDialog.Builder(this)
-                    .setTitle("Select Theme")
-                    .setItems(new String[]{"Dark", "Light", "Kaki", "Custom"}, (dialog, which) -> {
-                        Snackbar.make(scrollView, "Theme changed (demo)", Snackbar.LENGTH_SHORT).show();
-                    }).show();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 }
