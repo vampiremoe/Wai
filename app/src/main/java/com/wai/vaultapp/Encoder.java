@@ -1,78 +1,50 @@
 package com.wai.vaultapp;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
-/**
- * Encoder: provides reverse-based encryption.
- *
- * encryptReverse(src, dst) writes dst as the reverse of src (byte-wise).
- * This is reversible by running encryptReverse(dst, recoveredDst).
- */
 public class Encoder {
 
     /**
-     * Reverse-encrypt src into dst.
-     * Uses RandomAccessFile to avoid loading whole file into memory.
-     *
-     * @param src source file (must exist)
-     * @param dst destination file (will be created)
-     * @return true on success
+     * Encrypts the input file using a simple XOR key and saves it in the target folder.
+     * Returns the absolute path of the saved encrypted file, or null if failed.
      */
-    public static boolean encryptReverse(File src, File dst) {
-        if (src == null || dst == null || !src.exists()) return false;
-        final int CHUNK = 8192;
-        RandomAccessFile raf = null;
-        FileOutputStream fos = null;
+    public String encodeAndSave(String fileName, String inputPath, String targetFolder) {
+        int key = 0xA5; // simple XOR key, can be replaced with dynamic logic
+
         try {
-            raf = new RandomAccessFile(src, "r");
-            fos = new FileOutputStream(dst);
+            File inputFile = new File(inputPath);
+            if (!inputFile.exists()) return null;
 
-            long fileLen = raf.length();
-            long remaining = fileLen;
-            byte[] buffer = new byte[CHUNK];
+            // Make sure output directory exists
+            File outDir = new File(targetFolder);
+            if (!outDir.exists()) outDir.mkdirs();
 
-            while (remaining > 0) {
-                int toRead = (int)Math.min(CHUNK, remaining);
-                long pos = remaining - toRead;
-                raf.seek(pos);
-                int read = raf.read(buffer, 0, toRead);
-                if (read <= 0) break;
-
-                // reverse the buffer content
-                reverseInPlace(buffer, read);
-
-                // write reversed chunk
-                fos.write(buffer, 0, read);
-
-                remaining -= read;
+            // Handle duplicate filenames
+            File outFile = new File(outDir, fileName + ".bin");
+            for (int i = 0; outFile.exists(); i++) {
+                outFile = new File(outDir, "(" + i + ") " + fileName + ".bin");
             }
-            fos.getFD().sync();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (dst.exists()) dst.delete();
-            return false;
-        } finally {
-            try {
-                if (raf != null) raf.close();
-            } catch (IOException ignored) {}
-            try {
-                if (fos != null) fos.close();
-            } catch (IOException ignored) {}
-        }
-    }
 
-    private static void reverseInPlace(byte[] b, int len) {
-        int i = 0, j = len - 1;
-        while (i < j) {
-            byte t = b[i];
-            b[i] = b[j];
-            b[j] = t;
-            i++; j--;
+            FileInputStream fis = new FileInputStream(inputFile);
+            FileOutputStream fos = new FileOutputStream(outFile);
+
+            byte[] buffer = new byte[128];
+            int len;
+            while ((len = fis.read(buffer)) != -1) {
+                for (int i = 0; i < len; i++) buffer[i] ^= key;
+                fos.write(buffer, 0, len);
+            }
+
+            fis.close();
+            fos.close();
+
+            return outFile.getAbsolutePath();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
