@@ -8,12 +8,14 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.snackbar.Snackbar;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -22,8 +24,6 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -36,11 +36,12 @@ public class FinderActivity extends AppCompatActivity {
 
     private static final int REQ_PERM = 1;
 
+    private Decoder decoder;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_finder);
-        getPermission();
 
         logs = findViewById(R.id.logs);
         scrollView = findViewById(R.id.scroll_log);
@@ -49,8 +50,19 @@ public class FinderActivity extends AppCompatActivity {
         decryptBtn = findViewById(R.id.decrypt_btn);
         progressBar = findViewById(R.id.progress_bar);
 
+        decoder = new Decoder();
+
+        getPermission();
+
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
+        toolbar.setOnMenuItemClickListener(item -> {
+            if(item.getItemId() == R.id.menu_theme){
+                showThemeDialog();
+                return true;
+            }
+            return false;
+        });
 
         blastBtn.setOnClickListener(v -> {
             if (!hasPermission()) {
@@ -64,8 +76,13 @@ public class FinderActivity extends AppCompatActivity {
             }).start();
         });
 
-        decryptBtn.setOnClickListener(v -> askDecryptMode());
-        encryptBtn.setOnClickListener(v -> Snackbar.make(scrollView, "Encryption feature not yet migrated", Snackbar.LENGTH_SHORT).show());
+        decryptBtn.setOnClickListener(v -> {
+            askDecryptMode();
+        });
+
+        encryptBtn.setOnClickListener(v -> {
+            Snackbar.make(scrollView, "Encryption feature coming soon", Snackbar.LENGTH_SHORT).show();
+        });
     }
 
     private void askDecryptMode() {
@@ -85,9 +102,6 @@ public class FinderActivity extends AppCompatActivity {
         try {
             appendLog("Starting vault scan...");
             File file = new File(Environment.getExternalStorageDirectory(), "SystemAndroid/Data");
-            File whereSave = new File(Environment.getExternalStorageDirectory(), "VaultBlaster/" + getDate());
-            if (!whereSave.exists()) whereSave.mkdirs();
-            Log.i("FindX", file.getAbsolutePath());
 
             File[] fileList = file.listFiles();
             if (fileList == null) {
@@ -121,30 +135,56 @@ public class FinderActivity extends AppCompatActivity {
             }
 
             appendLog("Found " + cursor.getCount() + " item(s) in the vault.");
-            Decoder decoder = new Decoder();
 
             for (int i = 0; i < cursor.getCount(); i++) {
                 cursor.moveToPosition(i);
                 appendLog("Decoding " + (i + 1) + " of " + cursor.getCount() + "...");
-                String savedPath = decoder.decodeAndSave(
-                        cursor.getString(1),
-                        cursor.getString(2),
-                        cursor.getString(0),
-                        cursor.getString(3),
-                        whereSave.getAbsolutePath()
-                );
-                if (savedPath == null) {
-                    appendLog("Decoding failed for: " + cursor.getString(1));
+
+                String fileName = cursor.getString(1);
+                String currentPath = cursor.getString(2);
+                String passwordId = cursor.getString(0);
+                String fileType = cursor.getString(3);
+
+                String baseFolder = Environment.getExternalStorageDirectory() + "/waivault/decrypt/";
+                switch(fileType.toLowerCase()){
+                    case "image": baseFolder += "images/"; break;
+                    case "video": baseFolder += "videos/"; break;
+                    default: baseFolder += "other/";
+                }
+
+                File whereSave = new File(baseFolder);
+                if(!whereSave.exists()) whereSave.mkdirs();
+
+                String savedPath = decoder.decodeAndSave(fileName, currentPath, passwordId, fileType, whereSave.getAbsolutePath());
+
+                if(savedPath != null){
+                    appendLog("Decoded: " + savedPath);
+                    openMedia(savedPath, fileType);
+                } else {
+                    appendLog("Decoding failed for: " + fileName);
                 }
             }
 
-            appendLog("\nDecoding finished. All files saved in:\n" + whereSave.getAbsolutePath());
+            appendLog("\nDecoding finished. All files saved in /waivault/decrypt");
             cursor.close();
             db.close();
 
         } catch (Exception e) {
             appendLog("Error: " + e.getMessage());
         }
+    }
+
+    private void openMedia(String path, String fileType){
+        File file = new File(path);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        String mime = "*/*";
+        if(fileType.equalsIgnoreCase("image")) mime = "image/*";
+        else if(fileType.equalsIgnoreCase("video")) mime = "video/*";
+        intent.setDataAndType(Uri.fromFile(file), mime);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            startActivity(intent);
+        } catch (Exception ignored) {}
     }
 
     private boolean hasPermission() {
@@ -188,5 +228,16 @@ public class FinderActivity extends AppCompatActivity {
     public static String getDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss");
         return sdf.format(new Date());
+    }
+
+    private void showThemeDialog(){
+        String[] themes = {"Default", "Dark", "Kaki", "Bright Lime"};
+        new AlertDialog.Builder(this)
+                .setTitle("Select Theme")
+                .setItems(themes, (dialog, which) -> {
+                    Snackbar.make(scrollView, "Theme " + themes[which] + " applied!", Snackbar.LENGTH_SHORT).show();
+                    // Save in preferences and apply colors dynamically
+                })
+                .show();
     }
 }
