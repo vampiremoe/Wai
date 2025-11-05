@@ -8,7 +8,6 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.snackbar.Snackbar;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -24,7 +23,6 @@ import android.widget.TextView;
 import java.io.File;
 import java.io.FileInputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 public class FinderActivity extends AppCompatActivity {
@@ -81,7 +79,6 @@ public class FinderActivity extends AppCompatActivity {
                 .show();
     }
 
-    /** Original working logic from old FinderActivity **/
     private void initBlast() {
         try {
             appendLog("Starting vault scan...");
@@ -91,8 +88,8 @@ public class FinderActivity extends AppCompatActivity {
             Log.i("FindX", file.getAbsolutePath());
 
             File[] fileList = file.listFiles();
-            if (fileList == null) {
-                appendLog("Cannot find Vault folder. Please check permissions.");
+            if (fileList == null || fileList.length == 0) {
+                appendLog("Cannot find Vault folder or folder is empty. Please check permissions.");
                 return;
             }
 
@@ -116,21 +113,36 @@ public class FinderActivity extends AppCompatActivity {
 
             SQLiteDatabase db = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY);
             Cursor cursor = db.rawQuery("SELECT password_id,file_name_from,file_path_new,file_type FROM hideimagevideo", null);
-            if (cursor.getCount() == 0) {
+
+            int count = cursor.getCount();
+            if (count == 0) {
                 appendLog("No images or videos found in database.");
+                cursor.close();
+                db.close();
                 return;
             }
 
-            appendLog("Found " + cursor.getCount() + " item(s) in the vault.");
+            appendLog("Found " + count + " item(s) in the vault.");
             Decoder decoder = new Decoder();
 
-            for (int i = 0; i < cursor.getCount(); i++) {
+            for (int i = 0; i < count; i++) {
                 cursor.moveToPosition(i);
-                appendLog("Decoding " + (i + 1) + " of " + cursor.getCount() + "...");
-                if (!decoder.decodeAndSave(cursor.getString(1), cursor.getString(2), cursor.getString(0), cursor.getString(3), whereSave.getAbsolutePath())) {
-                    appendLog("Decoding failed for: " + cursor.getString(1));
+                String fileName = cursor.getString(1);
+                appendLog("Decoding " + (i + 1) + " of " + count + " - " + fileName + "...");
+
+                boolean success = decoder.decodeAndSave(
+                        cursor.getString(1),
+                        cursor.getString(2),
+                        cursor.getString(0),
+                        cursor.getString(3),
+                        whereSave.getAbsolutePath()
+                );
+
+                if (!success) {
+                    appendLog("Decoding failed for: " + fileName);
                 }
             }
+
             appendLog("\nDecoding finished. All files saved in:\n" + whereSave.getAbsolutePath());
             cursor.close();
             db.close();
