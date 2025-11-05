@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Material 3 color palette -->
-    <color name="md_theme_primary">#C6FF00</color>      <!-- bright lime -->
+
+    <!-- ✅ Old-style color names (for compatibility) -->
+    <color name="colorPrimary">#C6FF00</color>        <!-- bright lime -->
+    <color name="colorPrimaryDark">#AEEA00</color>    <!-- darker lime -->
+    <color name="colorAccent">#00BCD4</color>         <!-- cyan accent -->
+
+    <!-- ✅ Material 3 palette -->
+    <color name="md_theme_primary">#C6FF00</color>
     <color name="md_theme_onPrimary">#000000</color>
-    <color name="md_theme_secondary">#00BCD4</color>    <!-- cyan -->
+    <color name="md_theme_secondary">#00BCD4</color>
     <color name="md_theme_onSecondary">#000000</color>
-    <color name="md_theme_error">#FF1744</color>        <!-- red -->
-    <color name="md_theme_background">#000000</color>   <!-- pitch black -->
+    <color name="md_theme_error">#FF1744</color>
+    <color name="md_theme_background">#000000</color>
     <color name="md_theme_onBackground">#FFFFFF</color>
     <color name="md_theme_surface">#121212</color>
     <color name="md_theme_onSurface">#FFFFFF</color>
 
-    <!-- Button and card accents -->
+    <!-- ✅ UI elements -->
     <color name="card_bg">#1E1E1E</color>
     <color name="buttonText">#FFFFFF</color>
+
 </resources>
