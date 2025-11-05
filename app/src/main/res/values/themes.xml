@@ -1,16 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.Wai.DayNight" parent="Theme.Material3.DayNight.NoActionBar">
+    <!-- Application theme -->
+    <style name="Theme.Wai" parent="Theme.Material3.Dark.NoActionBar">
         <!-- Primary brand colors -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorOnPrimary">@color/colorOnPrimary</item>
-        <item name="colorSecondary">@color/colorSecondary</item>
-        <item name="android:statusBarColor">@color/colorBackground</item>
-        <item name="android:navigationBarColor">@color/colorBackground</item>
-        <item name="android:windowBackground">@color/colorBackground</item>
-        <item name="android:textColor">@color/colorOnBackground</item>
-        <item name="android:fontFamily">@android:font/sans-serif-medium</item>
+        <item name="colorPrimary">@color/md_theme_primary</item>
+        <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
+        <item name="colorSecondary">@color/md_theme_secondary</item>
+        <item name="colorOnSecondary">@color/md_theme_onSecondary</item>
+
+        <!-- Background + Surface -->
+        <item name="android:colorBackground">@color/md_theme_background</item>
+        <item name="colorSurface">@color/md_theme_surface</item>
+        <item name="colorOnSurface">@color/md_theme_onSurface</item>
+
+        <!-- Text and font -->
+        <item name="android:textColor">@color/md_theme_onBackground</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+
+        <!-- Navigation + Status bar -->
+        <item name="android:statusBarColor">@color/md_theme_background</item>
+        <item name="android:navigationBarColor">@color/md_theme_background</item>
     </style>
 
 </resources>
