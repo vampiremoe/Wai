@@ -5,7 +5,7 @@
     <item
         android:id="@+id/menu_themes"
         android:title="Themes"
-        android:icon="@drawable/ic_palette"
+        android:icon="@android:drawable/ic_menu_manage"
         android:showAsAction="always" />
 
 </menu>
