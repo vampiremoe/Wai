@@ -47,11 +47,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Scan Vault"
-                android:textColor="@color/buttonText"
-                android:shadowColor="#000000"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="2"
+                android:textColor="@android:color/black"
+                android:shadowColor="#80000000"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="1"
                 android:backgroundTint="@color/md_theme_error"
                 android:layout_marginBottom="10dp"
                 android:padding="10dp" />
@@ -61,12 +61,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Decrypt Files"
-                android:textColor="#000000"
-                android:shadowColor="#FFFFFF"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="2"
-                android:backgroundTint="@color/kaki"
+                android:textColor="@android:color/black"
+                android:shadowColor="#80000000"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="1"
+                android:backgroundTint="#C0A070"
                 android:layout_marginBottom="10dp"
                 android:padding="10dp" />
 
@@ -75,11 +75,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Encrypt Files"
-                android:textColor="#000000"
-                android:shadowColor="#FFFFFF"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="2"
+                android:textColor="@android:color/black"
+                android:shadowColor="#80000000"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="1"
                 android:backgroundTint="@color/md_theme_secondary"
                 android:padding="10dp" />
         </LinearLayout>
@@ -103,4 +103,3 @@
             android:textSize="14sp" />
     </ScrollView>
 </LinearLayout>
-
