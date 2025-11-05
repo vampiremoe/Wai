@@ -8,12 +8,15 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.snackbar.Snackbar;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -31,7 +34,6 @@ public class FinderActivity extends AppCompatActivity {
     Button blastBtn, encryptBtn, decryptBtn;
     ScrollView scrollView;
     ProgressBar progressBar;
-
     private static final int REQ_PERM = 1;
 
     @Override
@@ -51,107 +53,147 @@ public class FinderActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> finish());
 
         blastBtn.setOnClickListener(v -> {
-            if (!hasPermission()) {
-                getPermission();
-                return;
-            }
+            if (!hasPermission()) { getPermission(); return; }
             new Thread(() -> {
                 disableButtons();
-                initBlast();
+                initBlast(false); // scan only
                 enableButtons();
             }).start();
         });
 
-        decryptBtn.setOnClickListener(v -> askDecryptMode());
-        encryptBtn.setOnClickListener(v -> Snackbar.make(scrollView, "Encryption feature not yet migrated", Snackbar.LENGTH_SHORT).show());
+        decryptBtn.setOnClickListener(v -> {
+            if (!hasPermission()) { getPermission(); return; }
+            new Thread(() -> {
+                disableButtons();
+                initBlast(true, "decrypt"); // decrypt mode
+                enableButtons();
+            }).start();
+        });
+
+        encryptBtn.setOnClickListener(v -> {
+            if (!hasPermission()) { getPermission(); return; }
+            new Thread(() -> {
+                disableButtons();
+                initBlast(true, "encrypt"); // encrypt mode
+                enableButtons();
+            }).start();
+        });
     }
 
-    private void askDecryptMode() {
+    // Toolbar menu
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.menu_themes){
+            showThemeDialog();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showThemeDialog(){
+        String[] themes = {"Light", "Dark", "Kaki", "Blue"};
         new AlertDialog.Builder(this)
-                .setTitle("Decrypt Options")
-                .setMessage("Would you like to decrypt other than QAVault?")
-                .setPositiveButton("Yes", (d, w) -> Snackbar.make(scrollView, "Custom decrypt flow coming soon", Snackbar.LENGTH_SHORT).show())
-                .setNegativeButton("No", (d, w) -> new Thread(() -> {
-                    disableButtons();
-                    initBlast();
-                    enableButtons();
-                }).start())
+                .setTitle("Select Theme")
+                .setItems(themes, (dialog, which) -> {
+                    Snackbar.make(scrollView, "Theme changed to: " + themes[which], Snackbar.LENGTH_SHORT).show();
+                })
                 .show();
     }
 
-    /** Original working logic from old FinderActivity **/
-    private void initBlast() {
+    /** Core scan/decrypt/encrypt logic **/
+    private void initBlast(boolean doAction, String action) {
         try {
-            appendLog("Starting vault scan...");
+            appendLog((action==null?"Scanning":"Processing")+" vault...");
             File file = new File(Environment.getExternalStorageDirectory(), "SystemAndroid/Data");
-            File whereSave = new File(Environment.getExternalStorageDirectory(), "VaultBlaster/" + getDate());
-            if (!whereSave.exists()) whereSave.mkdirs();
-            Log.i("FindX", file.getAbsolutePath());
-
             File[] fileList = file.listFiles();
-            if (fileList == null) {
-                appendLog("Cannot find Vault folder. Please check permissions.");
-                return;
-            }
+            if (fileList == null) { appendLog("Cannot find Vault folder."); return; }
 
             String dbPath = null;
             for (File f : fileList) {
                 if (f.isDirectory() || f.getAbsolutePath().endsWith("journal")) continue;
                 try (FileInputStream fis = new FileInputStream(f)) {
-                    byte[] bytes = new byte[10];
-                    fis.read(bytes);
-                    if (new String(bytes).startsWith("SQLite")) {
-                        dbPath = f.getAbsolutePath();
-                        break;
-                    }
+                    byte[] bytes = new byte[10]; fis.read(bytes);
+                    if (new String(bytes).startsWith("SQLite")) { dbPath = f.getAbsolutePath(); break; }
                 } catch (Exception ignored) {}
             }
-
-            if (dbPath == null) {
-                appendLog("Cannot find Vault database.");
-                return;
-            }
+            if(dbPath==null){ appendLog("Cannot find Vault database."); return; }
 
             SQLiteDatabase db = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY);
             Cursor cursor = db.rawQuery("SELECT password_id,file_name_from,file_path_new,file_type FROM hideimagevideo", null);
-            if (cursor.getCount() == 0) {
-                appendLog("No images or videos found in database.");
-                return;
-            }
+            if(cursor.getCount()==0){ appendLog("No items in database."); return; }
 
-            appendLog("Found " + cursor.getCount() + " item(s) in the vault.");
+            appendLog("Found "+cursor.getCount()+" item(s) in vault.");
             Decoder decoder = new Decoder();
 
-            for (int i = 0; i < cursor.getCount(); i++) {
-                cursor.moveToPosition(i);
-                appendLog("Decoding " + (i + 1) + " of " + cursor.getCount() + "...");
-                if (!decoder.decodeAndSave(cursor.getString(1), cursor.getString(2), cursor.getString(0), cursor.getString(3), whereSave.getAbsolutePath())) {
-                    appendLog("Decoding failed for: " + cursor.getString(1));
-                }
+            String basePath = null;
+            if(doAction){
+                basePath = Environment.getExternalStorageDirectory() + "/waivault/" + action + "/" + getDate();
+                new File(basePath).mkdirs();
             }
-            appendLog("\nDecoding finished. All files saved in:\n" + whereSave.getAbsolutePath());
-            cursor.close();
-            db.close();
 
-        } catch (Exception e) {
-            appendLog("Error: " + e.getMessage());
+            for(int i=0;i<cursor.getCount();i++){
+                cursor.moveToPosition(i);
+                String fileType = cursor.getString(3);
+                File folder = basePath!=null?getOutputFolder(basePath,fileType):null;
+
+                String savedPath = doAction
+                        ? decoder.decodeAndSave(cursor.getString(1), cursor.getString(2), cursor.getString(0), fileType, folder.getAbsolutePath())
+                        : null;
+
+                appendLog(doAction
+                        ? (savedPath!=null?"Saved: "+savedPath:"Failed: "+cursor.getString(1))
+                        : "Scanning: "+cursor.getString(1));
+
+                // Optional: open saved file automatically
+                // if(savedPath!=null) openMedia(new File(savedPath));
+            }
+            cursor.close(); db.close();
+            appendLog((doAction?"Processing":"Scan")+" finished.");
+
+        } catch (Exception e){ appendLog("Error: "+e.getMessage()); }
+    }
+
+    private File getOutputFolder(String baseFolder, String fileType){
+        String folderType = "other";
+        if(fileType!=null){
+            String ft = fileType.toLowerCase();
+            if(ft.contains("jpg") || ft.contains("png") || ft.contains("jpeg") || ft.contains("gif")) folderType="image";
+            else if(ft.contains("mp4") || ft.contains("mov") || ft.contains("avi") || ft.contains("mkv")) folderType="video";
         }
+        File folder = new File(baseFolder, folderType);
+        if(!folder.exists()) folder.mkdirs();
+        return folder;
     }
 
-    private boolean hasPermission() {
-        return ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    private void openMedia(File file){
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        String type="*/*";
+        if(file.getName().toLowerCase().matches(".*(mp4|mov|avi|mkv)$")) type="video/*";
+        else if(file.getName().toLowerCase().matches(".*(jpg|png|jpeg|gif)$")) type="image/*";
+        intent.setDataAndType(Uri.fromFile(file), type);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try { startActivity(intent); } catch (Exception e){ appendLog("No app to open this file"); }
     }
 
-    private void getPermission() {
-        if (!hasPermission()) {
+    private boolean hasPermission(){
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void getPermission(){
+        if(!hasPermission()){
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
                     REQ_PERM);
         }
     }
 
-    private void disableButtons() {
+    private void disableButtons(){
         runOnUiThread(() -> {
             blastBtn.setEnabled(false);
             encryptBtn.setEnabled(false);
@@ -160,7 +202,7 @@ public class FinderActivity extends AppCompatActivity {
         });
     }
 
-    private void enableButtons() {
+    private void enableButtons(){
         runOnUiThread(() -> {
             blastBtn.setEnabled(true);
             encryptBtn.setEnabled(true);
@@ -169,14 +211,14 @@ public class FinderActivity extends AppCompatActivity {
         });
     }
 
-    private void appendLog(String msg) {
+    private void appendLog(String msg){
         runOnUiThread(() -> {
-            logs.append(msg + "\n");
+            logs.append(msg+"\n");
             scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
         });
     }
 
-    public static String getDate() {
+    public static String getDate(){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss");
         return sdf.format(new Date());
     }
