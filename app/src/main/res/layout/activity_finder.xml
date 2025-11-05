@@ -10,11 +10,11 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:backgroundTint="@color/md_theme_surface"
+        android:background="@color/card_bg"
         app:title="Wai Vault"
         app:titleTextColor="@color/md_theme_primary"
-        android:elevation="8dp"
-        app:navigationIconTint="@color/md_theme_primary" />
+        app:menu="@menu/main_menu"
+        android:elevation="6dp" />
 
     <ProgressBar
         android:id="@+id/progress_bar"
@@ -47,7 +47,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Scan Vault"
-                android:textColor="@color/buttonText"
+                android:textColor="@android:color/white"
                 android:backgroundTint="@color/md_theme_error"
                 android:layout_marginBottom="10dp"
                 android:padding="10dp" />
@@ -57,8 +57,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Decrypt Files"
-                android:textColor="@color/buttonText"
-                android:backgroundTint="@color/md_theme_primary"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/kaki"
                 android:layout_marginBottom="10dp"
                 android:padding="10dp" />
 
@@ -67,7 +67,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Encrypt Files"
-                android:textColor="@color/buttonText"
+                android:textColor="@android:color/white"
                 android:backgroundTint="@color/md_theme_secondary"
                 android:padding="10dp" />
         </LinearLayout>
