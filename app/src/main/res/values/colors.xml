@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#03DAC5</color>
+    <!-- Base colors -->
+    <color name="colorPrimary">#C6FF00</color> <!-- bright lime -->
+    <color name="colorOnPrimary">#000000</color>
+    <color name="colorSecondary">#00BCD4</color> <!-- cyan -->
+    <color name="colorError">#FF1744</color> <!-- red -->
+    <color name="colorSurface">#121212</color>
+    <color name="colorBackground">#000000</color>
+    <color name="colorOnBackground">#FFFFFF</color>
+    <color name="colorCard">#1E1E1E</color>
+
+    <!-- Button text -->
+    <color name="buttonText">#FFFFFF</color>
 </resources>
