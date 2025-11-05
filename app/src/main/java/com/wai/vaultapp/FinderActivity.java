@@ -7,8 +7,6 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -33,8 +31,6 @@ import java.io.InputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedInputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.ArrayList;
@@ -166,9 +162,10 @@ public class FinderActivity extends AppCompatActivity {
     }
 
     private String processAndEncryptUri(Uri uri) throws IOException {
-        String displayName = getDisplayNameForUri(uri);
-        if (displayName == null) displayName = "unknown";
-        File temp = new File(getCacheDir(), "tmp_" + System.currentTimeMillis() + "_" + displayName);
+        final String displayName = getDisplayNameForUri(uri); // ✅ FIXED: made final
+        String safeDisplayName = (displayName == null) ? "unknown" : displayName;
+
+        File temp = new File(getCacheDir(), "tmp_" + System.currentTimeMillis() + "_" + safeDisplayName);
         try (InputStream in = getContentResolver().openInputStream(uri);
              OutputStream out = new FileOutputStream(temp)) {
             byte[] buf = new byte[8192];
@@ -178,7 +175,7 @@ public class FinderActivity extends AppCompatActivity {
             }
             out.flush();
         } catch (Exception e) {
-            appendLog("Failed to copy selected file: " + displayName);
+            appendLog("Failed to copy selected file: " + safeDisplayName);
             if (temp.exists()) temp.delete();
             return null;
         }
@@ -190,7 +187,7 @@ public class FinderActivity extends AppCompatActivity {
             if (type.startsWith("image")) category = "image";
             else if (type.startsWith("video")) category = "video";
         } else {
-            String lower = displayName.toLowerCase();
+            String lower = safeDisplayName.toLowerCase();
             if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") ||
                 lower.endsWith(".gif") || lower.endsWith(".bmp")) category = "image";
             else if (lower.endsWith(".mp4") || lower.endsWith(".mkv") || lower.endsWith(".mov") ||
@@ -201,7 +198,7 @@ public class FinderActivity extends AppCompatActivity {
         File encDir = new File(root, "encrypted/" + category);
         if (!encDir.exists()) encDir.mkdirs();
 
-        String outName = displayName + ".enc";
+        String outName = safeDisplayName + ".enc";
         File outFile = new File(encDir, outName);
         for (int i = 0; outFile.exists(); i++) {
             outFile = new File(encDir, "(" + i + ") " + outName);
@@ -225,11 +222,11 @@ public class FinderActivity extends AppCompatActivity {
                 }
             });
         } else {
-            appendLog("Encryption failed for: " + displayName);
+            appendLog("Encryption failed for: " + safeDisplayName);
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(FinderActivity.this, "Encryption failed for: " + displayName, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(FinderActivity.this, "Encryption failed for: " + safeDisplayName, Toast.LENGTH_SHORT).show();
                 }
             });
         }
