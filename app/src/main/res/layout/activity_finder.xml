@@ -23,11 +23,29 @@
             android:cardCornerRadius="8dp">
 
             <Button
+                android:id="@+id/scan_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/scan_vault"
+                android:backgroundTint="@color/accent_cyan"
+                android:textColor="@color/black"
+                android:textAllCaps="false"/>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:cardElevation="4dp"
+            android:cardCornerRadius="8dp">
+
+            <Button
                 android:id="@+id/encrypt_btn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/encrypt"
-                android:backgroundTint="@color/accent_cyan"
+                android:backgroundTint="@color/accent_green"
                 android:textColor="@color/black"
                 android:textAllCaps="false"/>
         </com.google.android.material.card.MaterialCardView>
