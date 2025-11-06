@@ -6,4 +6,9 @@
     <string name="i_agree">I agree the terms and conditions above.</string>
     <string name="eula_file">user_agreed</string>
     <string name="continuebl">Continue</string>
+    
+    <!-- Add missing strings -->
+    <string name="scan_vault">Scan Vault</string>
+    <string name="encrypt">Encrypt</string>
+    <string name="decrypt">Decrypt</string>
 </resources>
