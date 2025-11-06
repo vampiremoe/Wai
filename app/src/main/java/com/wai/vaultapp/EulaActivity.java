@@ -47,7 +47,7 @@ public class EulaActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                startActivity(new Intent(EulaActivity.this, FinderActivity.class));
+                startActivity(new Intent(EulaActivity.this, MainActivity.class));
                 finish();
             }
         });
