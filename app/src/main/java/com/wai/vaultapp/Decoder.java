@@ -98,7 +98,7 @@ public class Decoder {
     private String getFileTypeFolder(String fileExt) {
         if (fileExt == null) return "other";
         
-        String lowerExt = fileExt.toLowerCase();
+        String lowerExt = fileExt.toLowerCase(java.util.Locale.ROOT);
         if (lowerExt.equals("jpg") || lowerExt.equals("jpeg") || 
             lowerExt.equals("png") || lowerExt.equals("gif") || 
             lowerExt.equals("bmp") || lowerExt.equals("webp")) {
