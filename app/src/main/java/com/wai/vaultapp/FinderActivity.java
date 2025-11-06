@@ -160,7 +160,9 @@ public class FinderActivity extends AppCompatActivity {
     }
 
     private void sendBrodcast(int code,String text){
+        // FIXED: Make intent explicit by setting the package
         Intent intent = new Intent("com.wai.vaultapp.log_u");
+        intent.setPackage(getPackageName()); // Make it explicit
         intent.putExtra("log_content", new String[]{String.valueOf(code), text});
         sendBroadcast(intent);
     }
