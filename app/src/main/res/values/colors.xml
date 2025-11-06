@@ -1,7 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="decrypt_btn_kaki">#C3B091</color>
-    <color name="encrypt_btn_gray">#DDDDDD</color>
-    <color name="text_black">#000000</color>
-    <color name="accent_lime">#C0FF00</color>
-    <color name="accent_cyan">#00FFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="lime_primary">#FF00FF00</color>
+    <color name="lime_accent">#FF80FF80</color>
+    <color name="dark_green">#FF006400</color>
+    <color name="bright_yellow">#FFFFFF00</color>
+    <color name="dark_red">#FF8B0000</color>
+    
+    <!-- Button colors -->
+    <color name="button_scan">#FF00FF00</color>
+    <color name="button_decrypt">#FFFFFF00</color>
+    <color name="button_encrypt">#FFFF0000</color>
 </resources>
