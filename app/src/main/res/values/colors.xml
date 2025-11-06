@@ -1,21 +1,7 @@
 <resources>
-    <color name="colorPrimary">#C6FF00</color>
-    <color name="colorPrimaryDark">#AEEA00</color>
-    <color name="colorAccent">#00BCD4</color>
-
-    <color name="md_theme_primary">#C6FF00</color>
-    <color name="md_theme_onPrimary">#000000</color>
-    <color name="md_theme_secondary">#00BCD4</color>
-    <color name="md_theme_onSecondary">#000000</color>
-    <color name="md_theme_error">#FF1744</color>
-    <color name="md_theme_background">#000000</color>
-    <color name="md_theme_onBackground">#FFFFFF</color>
-    <color name="md_theme_surface">#121212</color>
-    <color name="md_theme_onSurface">#FFFFFF</color>
-
-    <color name="card_bg">#1E1E1E</color>
-    <color name="buttonText">#FFFFFF</color>
-
-    <!-- Added for decrypt button -->
-    <color name="kaki">#C3B091</color>
+    <color name="decrypt_btn_kaki">#C3B091</color>
+    <color name="encrypt_btn_gray">#DDDDDD</color>
+    <color name="text_black">#000000</color>
+    <color name="accent_lime">#C0FF00</color>
+    <color name="accent_cyan">#00FFFF</color>
 </resources>
