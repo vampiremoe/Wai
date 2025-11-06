@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Auto-save Key"
+        android:textColor="@color/lime_primary"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <CheckBox
+        android:id="@+id/auto_save_key"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Remember last used key"
+        android:textColor="@color/lime_primary" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Default Output Folder"
+        android:textColor="@color/lime_primary"
+        android:textSize="16sp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/default_folder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="/storage/emulated/0/waivault/"
+        android:textColor="@color/lime_primary"
+        android:backgroundTint="@color/lime_primary" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="File Organization"
+        android:textColor="@color/lime_primary"
+        android:textSize="16sp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp" />
+
+    <CheckBox
+        android:id="@+id/organize_files"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sort files into type folders"
+        android:checked="true"
+        android:textColor="@color/lime_primary" />
+
+</LinearLayout>
