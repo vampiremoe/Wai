@@ -39,7 +39,7 @@
         android:fontFamily="monospace"
         android:layout_marginBottom="30dp" />
 
-    <!-- Simple Progress Bar (No Material Design dependency) -->
+    <!-- Simple Progress Bar -->
     <ProgressBar
         android:id="@+id/progress_bar"
         android:layout_width="50dp"
