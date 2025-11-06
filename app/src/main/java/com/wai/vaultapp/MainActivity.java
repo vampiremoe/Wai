@@ -3,6 +3,7 @@ package com.wai.vaultapp;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,6 +16,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.io.File;
 import java.io.InputStream;
@@ -98,7 +100,8 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void setupButtonWithContrast(Button button, int colorRes) {
-        int color = getColor(colorRes);
+        // FIXED: Use ContextCompat.getColor() instead of getColor() for API 21+ compatibility
+        int color = ContextCompat.getColor(this, colorRes);
         button.setBackgroundColor(color);
         double luminance = 0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color);
         button.setTextColor(luminance > 186 ? Color.BLACK : Color.WHITE);
@@ -392,7 +395,8 @@ public class MainActivity extends AppCompatActivity {
         handler.post(() -> {
             terminalDisplay.setText(message);
             terminalDisplay.setTextSize(24);
-            terminalDisplay.setTextColor(getColor(R.color.lime_primary));
+            // FIXED: Use ContextCompat.getColor() instead of getColor()
+            terminalDisplay.setTextColor(ContextCompat.getColor(this, R.color.lime_primary));
             
             handler.postDelayed(() -> {
                 terminalDisplay.setTextSize(14);
@@ -422,9 +426,7 @@ public class MainActivity extends AppCompatActivity {
     
     @Override
     public boolean onSupportNavigateUp() {
-        // Handle hamburger menu click
         appendLog("Main menu opened");
-        // You can add menu functionality here later
         return true;
     }
 }
