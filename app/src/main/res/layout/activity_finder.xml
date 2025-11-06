@@ -1,45 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="8dp"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:background="@color/background">
 
+    <!-- Buttons row -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
 
-        <Button
-            android:id="@+id/decrypt_btn"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:text="Decrypt"
-            android:layout_margin="4dp"/>
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:cardElevation="4dp"
+            android:cardCornerRadius="8dp">
 
-        <Button
-            android:id="@+id/encrypt_btn"
+            <Button
+                android:id="@+id/encrypt_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/encrypt"
+                android:backgroundTint="@color/accent_cyan"
+                android:textColor="@color/black"
+                android:textAllCaps="false"/>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:text="Encrypt"
-            android:layout_margin="4dp"/>
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:cardElevation="4dp"
+            android:cardCornerRadius="8dp">
+
+            <Button
+                android:id="@+id/decrypt_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/decrypt"
+                android:backgroundTint="@color/kaki"
+                android:textColor="@color/black"
+                android:textAllCaps="false"/>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
-    <ScrollView
-        android:id="@+id/scroll_log"
+    <!-- Progress bar -->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        android:layout_marginBottom="8dp"
+        android:indeterminate="false"
+        android:max="100"
+        android:progress="0"
+        android:progressTint="@color/accent_lime"/>
+
+    <!-- Log area -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:cardCornerRadius="8dp"
+        android:cardElevation="4dp"
         android:padding="4dp">
 
-        <TextView
-            android:id="@+id/logs"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@android:color/black"
-            android:gravity="start"
-            android:freezesText="true"/>
-    </ScrollView>
+            android:layout_height="match_parent">
 
+            <TextView
+                android:id="@+id/logs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/log"
+                android:textColor="@color/black"
+                android:scrollbars="vertical"/>
+        </ScrollView>
+    </com.google.android.material.card.MaterialCardView>
 </LinearLayout>
