@@ -8,43 +8,58 @@ import java.io.IOException;
 public class Encoder {
 
     /**
-     * Encrypts the input file using a simple XOR key and saves it in the target folder.
-     * Returns the absolute path of the saved encrypted file, or null if failed.
+     * Encrypts a file using simple XOR mirroring like Decoder.
+     * @param inputFile File to encrypt
+     * @param outputBaseFolder Base folder for encrypted files
+     * @param key XOR key
+     * @return true if successful
      */
-    public String encodeAndSave(String fileName, String inputPath, String targetFolder) {
-        int key = 0xA5; // simple XOR key, can be replaced with dynamic logic
+    public boolean encodeFile(File inputFile, String outputBaseFolder, int key) {
+        if(!inputFile.exists()) return false;
 
-        try {
-            File inputFile = new File(inputPath);
-            if (!inputFile.exists()) return null;
+        String ext = getFileExtension(inputFile.getName());
+        String typeFolder = "others";
+        if(ext.equalsIgnoreCase(".jpg") || ext.equalsIgnoreCase(".png") || ext.equalsIgnoreCase(".gif") || ext.equalsIgnoreCase(".svg") || ext.equalsIgnoreCase(".webp")) {
+            typeFolder = "images";
+        } else if(ext.equalsIgnoreCase(".mp4") || ext.equalsIgnoreCase(".mkv") || ext.equalsIgnoreCase(".mov") || ext.equalsIgnoreCase(".3gp") || ext.equalsIgnoreCase(".wmv") || ext.equalsIgnoreCase(".avi") || ext.equalsIgnoreCase(".flv") || ext.equalsIgnoreCase(".m4v") || ext.equalsIgnoreCase(".vob")) {
+            typeFolder = "videos";
+        }
 
-            // Make sure output directory exists
-            File outDir = new File(targetFolder);
-            if (!outDir.exists()) outDir.mkdirs();
+        File saveDir = new File(outputBaseFolder + "/encrypt", typeFolder);
+        if(!saveDir.exists()) saveDir.mkdirs();
 
-            // Handle duplicate filenames
-            File outFile = new File(outDir, fileName + ".bin");
-            for (int i = 0; outFile.exists(); i++) {
-                outFile = new File(outDir, "(" + i + ") " + fileName + ".bin");
-            }
+        File saveFile = new File(saveDir, inputFile.getName() + ".bin");
+        for(int i=0; saveFile.exists(); i++){
+            saveFile = new File(saveDir, "(" + i + ") " + inputFile.getName() + ".bin");
+        }
 
-            FileInputStream fis = new FileInputStream(inputFile);
-            FileOutputStream fos = new FileOutputStream(outFile);
+        try (FileInputStream fis = new FileInputStream(inputFile);
+             FileOutputStream fos = new FileOutputStream(saveFile)) {
 
             byte[] buffer = new byte[128];
+            int readLen = fis.read(buffer);
+            for(int i=0; i<readLen; i++){
+                buffer[i] = (byte)(buffer[i]^key);
+            }
+            fos.write(buffer,0,readLen);
+
+            // Write remaining
+            buffer = new byte[262144];
             int len;
-            while ((len = fis.read(buffer)) != -1) {
-                for (int i = 0; i < len; i++) buffer[i] ^= key;
-                fos.write(buffer, 0, len);
+            while((len = fis.read(buffer)) > 0){
+                fos.write(buffer,0,len);
             }
 
-            fis.close();
-            fos.close();
-
-            return outFile.getAbsolutePath();
-        } catch (IOException e) {
+        } catch (IOException e){
             e.printStackTrace();
-            return null;
+            return false;
         }
+        return true;
+    }
+
+    private String getFileExtension(String name){
+        int lastDot = name.lastIndexOf(".");
+        if(lastDot>0) return name.substring(lastDot);
+        return "";
     }
 }
