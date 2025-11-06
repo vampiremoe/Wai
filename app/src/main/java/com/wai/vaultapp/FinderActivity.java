@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -86,12 +87,15 @@ public class FinderActivity extends AppCompatActivity {
                 }
             }
         };
-        // FIX: Add RECEIVER_NOT_EXPORTED flag for Android 13+ compatibility
-if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-    registerReceiver(brLog, new IntentFilter("com.wai.vaultapp.log_u"), android.content.Context.RECEIVER_NOT_EXPORTED);
-} else {
-    registerReceiver(brLog, new IntentFilter("com.wai.vaultapp.log_u"));
-}
+        
+        // FIXED: BroadcastReceiver with proper flag
+        IntentFilter filter = new IntentFilter("com.wai.vaultapp.log_u");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(brLog, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(brLog, filter);
+        }
+    }
 
     private void initBlast() {
         disableButton();
