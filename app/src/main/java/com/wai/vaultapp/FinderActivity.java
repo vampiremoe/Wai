@@ -86,7 +86,11 @@ public class FinderActivity extends AppCompatActivity {
                 }
             }
         };
-        registerReceiver(brLog, new IntentFilter("com.wai.vaultapp.log_u"));
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+    registerReceiver(brLog, new IntentFilter("com.wai.vaultapp.log_u"), Context.RECEIVER_NOT_EXPORTED);
+} else {
+    registerReceiver(brLog, new IntentFilter("com.wai.vaultapp.log_u"));
+}
     }
 
     private void initBlast() {
