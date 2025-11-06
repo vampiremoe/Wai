@@ -3,10 +3,24 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    
+    <!-- Background Circle -->
+    <path
+        android:fillColor="#FF00FF00"
+        android:pathData="M54,20 m-34,0 a34,34 0 1,1 68,0 a34,34 0 1,1 -68,0" />
+    
+    <!-- Lock Body -->
     <path
         android:fillColor="#FF000000"
-        android:pathData="M30,30h48v48h-48z"/>
+        android:pathData="M44,50 h20 v-15 a10,10 0 0,0 -20,0 z" />
+    
     <path
         android:fillColor="#FF000000"
-        android:pathData="M44,44h20v20h-20z"/>
+        android:pathData="M40,50 h28 v25 h-28 z" />
+        
+    <!-- Keyhole -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M51,58 h6 v8 h-6 z" />
+        
 </vector>
