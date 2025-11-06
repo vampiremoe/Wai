@@ -11,4 +11,11 @@
     
     <!-- Icon colors -->
     <color name="ic_launcher_background">#FF00FF00</color>
+    
+    <!-- Add missing colors from errors -->
+    <color name="background">#FF000000</color>
+    <color name="accent_cyan">#FF00FFFF</color>
+    <color name="accent_green">#FF00FF00</color>
+    <color name="kaki">#FF808000</color>
+    <color name="accent_lime">#FF00FF00</color>
 </resources>
