@@ -16,7 +16,7 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_splash); // Uses activity_splash.xml
+        setContentView(R.layout.activity_splash);
         
         // Animate loading text
         TextView loadingText = findViewById(R.id.loading_text);
@@ -37,6 +37,7 @@ public class SplashActivity extends AppCompatActivity {
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) {
             File file = new File(getFilesDir(), getResources().getString(R.string.eula_file));
             if (file.exists()) {
+                // FIXED: Go to MainActivity (NEW UI) instead of FinderActivity
                 startActivity(new Intent(SplashActivity.this, MainActivity.class));
             } else {
                 startActivity(new Intent(SplashActivity.this, EulaActivity.class));
