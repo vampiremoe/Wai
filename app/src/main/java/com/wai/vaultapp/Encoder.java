@@ -114,4 +114,96 @@ public class Encoder {
             return false;
         }
     }
+    
+    // Add this missing method that FinderActivity was calling
+    public boolean encodeFile(File inputFile, String outputFolder, int key) {
+        try {
+            String outputFileName = inputFile.getName() + ".encrypted";
+            File outputDir = new File(outputFolder);
+            if (!outputDir.exists()) {
+                outputDir.mkdirs();
+            }
+            
+            File outputFile = new File(outputDir, outputFileName);
+            
+            int counter = 1;
+            while (outputFile.exists()) {
+                outputFileName = "(" + counter + ") " + inputFile.getName() + ".encrypted";
+                outputFile = new File(outputDir, outputFileName);
+                counter++;
+            }
+            
+            return encodeFileWithKey(inputFile.getAbsolutePath(), key, outputFolder);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    // Additional utility method for batch encoding
+    public boolean encodeMultipleFiles(File[] inputFiles, int key, String outputFolder) {
+        boolean allSuccess = true;
+        
+        for (File inputFile : inputFiles) {
+            if (!inputFile.exists() || inputFile.isDirectory()) {
+                continue;
+            }
+            
+            boolean success = encodeFile(inputFile, outputFolder, key);
+            if (!success) {
+                allSuccess = false;
+            }
+        }
+        
+        return allSuccess;
+    }
+    
+    // Method to encode with automatic file type detection
+    public boolean encodeWithDetection(String inputPath, int key, String outputFolder) {
+        try {
+            File inputFile = new File(inputPath);
+            if (!inputFile.exists()) {
+                return false;
+            }
+            
+            // Read file header to detect type
+            byte[] header = new byte[12];
+            FileInputStream fis = new FileInputStream(inputFile);
+            fis.read(header);
+            fis.close();
+            
+            // Use KeyFinder to detect file type
+            String[] detectionResult = KeyFinder.find(header);
+            String fileExtension = detectionResult[0];
+            
+            String originalName = inputFile.getName();
+            String baseName = originalName;
+            if (originalName.contains(".")) {
+                baseName = originalName.substring(0, originalName.lastIndexOf("."));
+            }
+            
+            String encryptedName = baseName + "_encrypted" + fileExtension;
+            
+            File outputDir = new File(outputFolder);
+            if (!outputDir.exists()) {
+                outputDir.mkdirs();
+            }
+            
+            File outputFile = new File(outputDir, encryptedName);
+            
+            int counter = 1;
+            while (outputFile.exists()) {
+                encryptedName = "(" + counter + ") " + baseName + "_encrypted" + fileExtension;
+                outputFile = new File(outputDir, encryptedName);
+                counter++;
+            }
+            
+            return encodeFileWithKey(inputPath, key, outputFolder);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
