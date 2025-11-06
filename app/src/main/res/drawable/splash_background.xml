@@ -4,6 +4,6 @@
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/logo.jpg" />
+            android:src="@drawable/logo" /> <!-- Remove .jpg extension -->
     </item>
 </layer-list>
