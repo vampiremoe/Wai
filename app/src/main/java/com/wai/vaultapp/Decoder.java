@@ -9,96 +9,86 @@ import java.util.ArrayList;
 public class Decoder {
     ArrayList<KVP> kvps;
     private String lastPasswordId;
-    private int lastPassword;
+    private int lassPassword;
 
     public Decoder(){
         kvps = new ArrayList<>();
-        lastPassword = 0;
+        lassPassword = 0;
         lastPasswordId = "";
     }
 
-    public boolean decodeAndSave(String fileName, String currentPath, String passwordId, String fileExt, String whereSaveBase){
+    public boolean decodeAndSave(String fileName, String currentPath, String passwordId, String fileExt, String whereSave){
         int key  = -1;
         if(!currentPath.endsWith(".bin")){
             currentPath = currentPath.substring(0,currentPath.lastIndexOf("."))+".bin";
         }
-
         if(passwordId.equalsIgnoreCase(lastPasswordId)){
-            key = lastPassword;
+            key = lassPassword;
         } else {
-            for(KVP kvp : kvps){
+            for(KVP kvp: kvps){
                 if(kvp.key.equalsIgnoreCase(passwordId)){
                     key = kvp.value;
-                    lastPassword = key;
+                    lassPassword = key;
                     lastPasswordId = passwordId;
                     break;
                 }
             }
         }
-
-        if(key < 0){
+        if(key<0){
+            byte[] bytes = new byte[12];
             try {
-                byte[] bytes = new byte[12];
-                FileInputStream fis = new FileInputStream(new File(currentPath));
-                fis.read(bytes);
-                fis.close();
+                FileInputStream fileInputStream = new FileInputStream(new File(currentPath));
+                fileInputStream.read(bytes);
+                fileInputStream.close();
                 String[] extKey = KeyFinder.find(bytes,fileExt);
                 if(extKey[0].endsWith(fileExt)){
                     key = Integer.parseInt(extKey[1]);
-                    lastPassword = key;
+                    lassPassword = key;
                     lastPasswordId = passwordId;
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            } catch (Exception e) { e.printStackTrace(); }
         }
-
-        if(key < 0) return false;
+        if(key<0) return false;
 
         try {
-            return decodeAndSaveImpl(currentPath, key, fileName, whereSaveBase, fileExt);
+            File saveFolder = new File(whereSave, getFolderByType(fileExt));
+            if(!saveFolder.exists()) saveFolder.mkdirs();
+            return decodeAndSaveImpl(currentPath,key,fileName,saveFolder.getAbsolutePath());
         } catch (IOException e) {
             return false;
         }
     }
 
-    private boolean decodeAndSaveImpl(String currentPath, int key, String fileName, String baseFolder, String fileExt) throws IOException {
-        // Determine folder based on type
-        String typeFolder = "others";
-        if(fileExt.equalsIgnoreCase(".jpg") || fileExt.equalsIgnoreCase(".png") || fileExt.equalsIgnoreCase(".gif") || fileExt.equalsIgnoreCase(".svg") || fileExt.equalsIgnoreCase(".webp")) {
-            typeFolder = "images";
-        } else if(fileExt.equalsIgnoreCase(".mp4") || fileExt.equalsIgnoreCase(".mkv") || fileExt.equalsIgnoreCase(".mov") || fileExt.equalsIgnoreCase(".3gp") || fileExt.equalsIgnoreCase(".wmv") || fileExt.equalsIgnoreCase(".avi") || fileExt.equalsIgnoreCase(".flv") || fileExt.equalsIgnoreCase(".m4v") || fileExt.equalsIgnoreCase(".vob")) {
-            typeFolder = "videos";
+    private String getFolderByType(String ext){
+        ext = ext.toLowerCase();
+        if(ext.contains("jpg")||ext.contains("png")||ext.contains("gif")||ext.contains("svg")||ext.contains("webp")) return "images";
+        if(ext.contains("mp4")||ext.contains("3gp")||ext.contains("mkv")||ext.contains("mov")||ext.contains("avi")||ext.contains("wmv")||ext.contains("flv")||ext.contains("vob")||ext.contains("webm")||ext.contains("m4v")) return "videos";
+        return "others";
+    }
+
+    private boolean decodeAndSaveImpl(String currentPath, int key,String fileName,String parentFolder) throws IOException {
+        File saveFile = new File(parentFolder,fileName);
+        for(int i=0;saveFile.exists();i++){
+            saveFile = new File(parentFolder,"("+i+") "+fileName);
         }
-
-        File saveDir = new File(baseFolder, typeFolder);
-        if(!saveDir.exists()) saveDir.mkdirs();
-
-        File saveFile = new File(saveDir, fileName);
-        for(int i=0; saveFile.exists(); i++){
-            saveFile = new File(saveDir, "(" + i + ") " + fileName);
-        }
-
-        FileInputStream fis = new FileInputStream(new File(currentPath));
-        FileOutputStream fos = new FileOutputStream(saveFile);
-
-        // First 128 bytes XOR
+        FileInputStream fileInputStream = new FileInputStream(new File(currentPath));
         byte[] bytes = new byte[128];
-        int readLen = fis.read(bytes);
-        for(int i=0; i<readLen; i++){
+        fileInputStream.read(bytes);
+        for(int i=0;i<bytes.length;i++){
             bytes[i] = (byte)(bytes[i]^key);
         }
-        fos.write(bytes,0,readLen);
-
-        // Write rest in chunks
-        byte[] buffer = new byte[262144];
-        int len;
-        while((len = fis.read(buffer)) > 0){
-            fos.write(buffer,0,len);
+        FileOutputStream fileOutputStream = new FileOutputStream(saveFile);
+        fileOutputStream.write(bytes);
+        while (fileInputStream.available()>262144){
+            byte[] b256kB = new byte[262144];
+            fileInputStream.read(b256kB);
+            fileOutputStream.write(b256kB);
         }
-
-        fis.close();
-        fos.close();
+        byte[] bXkB = new byte[fileInputStream.available()];
+        fileInputStream.read(bXkB);
+        fileOutputStream.write(bXkB);
+        fileInputStream.close();
+        fileOutputStream.close();
         return true;
     }
 
