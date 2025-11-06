@@ -86,12 +86,12 @@ public class FinderActivity extends AppCompatActivity {
                 }
             }
         };
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-    registerReceiver(brLog, new IntentFilter("com.wai.vaultapp.log_u"), Context.RECEIVER_NOT_EXPORTED);
+        // FIX: Add RECEIVER_NOT_EXPORTED flag for Android 13+ compatibility
+if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+    registerReceiver(brLog, new IntentFilter("com.wai.vaultapp.log_u"), android.content.Context.RECEIVER_NOT_EXPORTED);
 } else {
     registerReceiver(brLog, new IntentFilter("com.wai.vaultapp.log_u"));
 }
-    }
 
     private void initBlast() {
         disableButton();
