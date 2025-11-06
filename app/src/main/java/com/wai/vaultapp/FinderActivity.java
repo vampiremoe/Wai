@@ -13,7 +13,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -88,13 +87,9 @@ public class FinderActivity extends AppCompatActivity {
             }
         };
         
-        // FIXED: BroadcastReceiver with proper flag
+        // FIXED: Use ContextCompat.registerReceiver for all API levels
         IntentFilter filter = new IntentFilter("com.wai.vaultapp.log_u");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(brLog, filter, Context.RECEIVER_NOT_EXPORTED);
-        } else {
-            registerReceiver(brLog, filter);
-        }
+        ContextCompat.registerReceiver(this, brLog, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
     private void initBlast() {
