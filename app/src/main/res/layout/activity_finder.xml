@@ -1,106 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<LinearLayout 
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="8dp"
-    android:background="@color/background">
-
-    <!-- Buttons row -->
-    <LinearLayout
+    android:layout_margin="8dp"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="8dp">
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="4dp"
-            android:cardElevation="4dp"
-            android:cardCornerRadius="8dp">
-
-            <Button
-                android:id="@+id/scan_btn"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/scan_vault"
-                android:backgroundTint="@color/accent_cyan"
-                android:textColor="@color/black"
-                android:textAllCaps="false"/>
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:cardElevation="4dp"
-            android:cardCornerRadius="8dp">
-
-            <Button
-                android:id="@+id/encrypt_btn"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/encrypt"
-                android:backgroundTint="@color/accent_green"
-                android:textColor="@color/black"
-                android:textAllCaps="false"/>
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:cardElevation="4dp"
-            android:cardCornerRadius="8dp">
-
-            <Button
-                android:id="@+id/decrypt_btn"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/decrypt"
-                android:backgroundTint="@color/kaki"
-                android:textColor="@color/black"
-                android:textAllCaps="false"/>
-        </com.google.android.material.card.MaterialCardView>
-    </LinearLayout>
-
-    <!-- Progress bar -->
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="8dp"
-        android:layout_marginBottom="8dp"
-        android:indeterminate="false"
-        android:max="100"
-        android:progress="0"
-        android:progressTint="@color/accent_lime"/>
-
-    <!-- Log area -->
-    <com.google.android.material.card.MaterialCardView
+        android:layout_margin="4dp"
+        android:text="@string/blast"
+        android:id="@+id/blast" />
+        
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:cardCornerRadius="8dp"
-        android:cardElevation="4dp"
-        android:padding="4dp">
-
-        <ScrollView
+        android:id="@+id/scroll_log"
+        android:layout_weight="1.0">
+        
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:hint="@string/log"
+            android:freezesText="true"
+            android:gravity="start"
+            android:id="@+id/logs"/>
+            
+    </ScrollView>
 
-            <TextView
-                android:id="@+id/logs"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/log"
-                android:textColor="@color/black"
-                android:scrollbars="vertical"/>
-        </ScrollView>
-    </com.google.android.material.card.MaterialCardView>
 </LinearLayout>
