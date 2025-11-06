@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="lime_primary">#FF00FF00</color>
+    <color name="lime_accent">#FF80FF80</color>
+    
+    <!-- Button colors -->
+    <color name="button_scan">#FF00FF00</color>
+    <color name="button_decrypt">#FFFFFF00</color>
+    <color name="button_encrypt">#FFFF0000</color>
+    
+    <!-- Icon colors -->
+    <color name="ic_launcher_background">#FF00FF00</color>
+</resources>
