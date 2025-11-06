@@ -1,105 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
+<LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/md_theme_background">
+    android:orientation="vertical"
+    android:padding="8dp"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/card_bg"
-        app:title="Wai Vault"
-        app:titleTextColor="@color/md_theme_primary"
-        android:elevation="6dp"
-        app:menu="@menu/main_menu" />
-
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="4dp"
-        android:indeterminate="true"
-        android:visibility="gone"
-        android:progressTint="@color/md_theme_primary"
-        android:indeterminateTint="@color/md_theme_primary"
-        android:layout_marginBottom="4dp" />
-
-    <com.google.android.material.card.MaterialCardView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="4dp"
-        android:backgroundTint="@color/card_bg">
+        android:orientation="horizontal">
 
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:gravity="center">
+        <Button
+            android:id="@+id/decrypt_btn"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="Decrypt"
+            android:layout_margin="4dp"/>
 
-            <Button
-                android:id="@+id/blast"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Scan Vault"
-                android:textColor="@android:color/black"
-                android:shadowColor="#FFFFFF"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="2"
-                android:backgroundTint="@color/md_theme_error"
-                android:layout_marginBottom="10dp"
-                android:padding="10dp" />
-
-            <Button
-                android:id="@+id/decrypt_btn"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Decrypt Files"
-                android:textColor="@android:color/black"
-                android:shadowColor="#FFFFFF"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="2"
-                android:backgroundTint="#F0E68C"
-                android:layout_marginBottom="10dp"
-                android:padding="10dp" />
-
-            <Button
-                android:id="@+id/encrypt_btn"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Encrypt Files"
-                android:textColor="@android:color/black"
-                android:shadowColor="#FFFFFF"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="2"
-                android:backgroundTint="@color/md_theme_secondary"
-                android:padding="10dp" />
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+        <Button
+            android:id="@+id/encrypt_btn"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="Encrypt"
+            android:layout_margin="4dp"/>
+    </LinearLayout>
 
     <ScrollView
         android:id="@+id/scroll_log"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_margin="12dp"
-        android:background="@color/card_bg"
-        android:padding="10dp">
+        android:padding="4dp">
 
         <TextView
             android:id="@+id/logs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Logs will appear here..."
-            android:textColor="@color/md_theme_onSurface"
-            android:textSize="14sp" />
+            android:textColor="@android:color/black"
+            android:gravity="start"
+            android:freezesText="true"/>
     </ScrollView>
+
 </LinearLayout>
