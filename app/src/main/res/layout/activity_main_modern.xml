@@ -6,7 +6,6 @@
     android:orientation="vertical"
     android:background="@color/black">
 
-    <!-- Toolbar with hamburger menu and cool title -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -23,7 +22,6 @@
 
     </com.google.android.material.appbar.MaterialToolbar>
 
-    <!-- Upper Part: Terminal Display -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -56,10 +54,8 @@
                 android:padding="12dp" />
 
         </com.google.android.material.card.MaterialCardView>
-
     </LinearLayout>
 
-    <!-- Middle Part: Three Buttons -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -103,7 +99,6 @@
 
     </LinearLayout>
 
-    <!-- Lower Part: Log Display -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -140,9 +135,6 @@
                     android:padding="12dp" />
 
             </ScrollView>
-
         </com.google.android.material.card.MaterialCardView>
-
     </LinearLayout>
-
 </LinearLayout>
