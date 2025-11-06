@@ -3,8 +3,8 @@ package com.wai.vaultapp;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
@@ -19,10 +19,15 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
 public class MainActivity extends AppCompatActivity {
     
@@ -100,7 +105,6 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void setupButtonWithContrast(Button button, int colorRes) {
-        // FIXED: Use ContextCompat.getColor() instead of getColor() for API 21+ compatibility
         int color = ContextCompat.getColor(this, colorRes);
         button.setBackgroundColor(color);
         double luminance = 0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color);
@@ -113,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
         btnEncrypt.setOnClickListener(v -> onEncryptClicked());
     }
     
+    // ========== SCAN VAULT FUNCTION (Like FinderActivity but with waivault folder) ==========
     private void onScanVaultClicked() {
         appendLog("=== SCAN VAULT INITIATED ===");
         startTerminalAnimation();
@@ -121,14 +126,11 @@ public class MainActivity extends AppCompatActivity {
             try {
                 Thread.sleep(1000);
                 handler.post(() -> {
-                    boolean found = scanForVaultFiles();
+                    boolean found = scanAndDecryptVault();
                     if (found) {
                         showFancyDisplay("FOUND");
-                        appendLog("Vault database found. Starting decryption...");
-                        startActivity(new Intent(MainActivity.this, FinderActivity.class));
                     } else {
                         showFancyDisplay("COULDN'T FIND IT");
-                        appendLog("No vault database found in expected location.");
                     }
                 });
             } catch (InterruptedException e) {
@@ -137,6 +139,100 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
     
+    private boolean scanAndDecryptVault() {
+        appendLog("Searching for vault database...");
+        
+        File vaultDir = new File(Environment.getExternalStorageDirectory(), "SystemAndroid/Data");
+        if (!vaultDir.exists() || vaultDir.listFiles() == null) {
+            appendLog("Vault directory not found: " + vaultDir.getAbsolutePath());
+            return false;
+        }
+        
+        appendLog("Found vault directory: " + vaultDir.getAbsolutePath());
+        
+        String dbPath = null;
+        File[] fileList = vaultDir.listFiles();
+        
+        // Find SQLite database file
+        for (File f : fileList) {
+            if (f.isDirectory() || f.getAbsolutePath().endsWith("journal")) {
+                continue;
+            }
+            try {
+                FileInputStream fileInputStream = new FileInputStream(f);
+                byte[] bytes = new byte[10];
+                fileInputStream.read(bytes);
+                fileInputStream.close();
+                if (new String(bytes).startsWith("SQLite")) {
+                    dbPath = f.getAbsolutePath();
+                    appendLog("Found database: " + f.getName());
+                    break;
+                }
+            } catch (Exception ex) {
+                // Continue searching
+            }
+        }
+        
+        if (dbPath == null) {
+            appendLog("No vault database found.");
+            return false;
+        }
+        
+        // Create waivault/decrypted folder with organized subfolders
+        File whereSave = new File(Environment.getExternalStorageDirectory(), "waivault/decrypted");
+        if (!whereSave.exists()) {
+            whereSave.mkdirs();
+        }
+        
+        appendLog("Output folder: " + whereSave.getAbsolutePath());
+        
+        try {
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY);
+            Cursor cursor = db.rawQuery("SELECT password_id,file_name_from,file_path_new,file_type FROM hideimagevideo", null);
+            
+            if(cursor.getCount() == 0){
+                appendLog("No files found in vault database.");
+                cursor.close();
+                db.close();
+                return true; // Found vault but empty
+            }
+            
+            appendLog("Found " + cursor.getCount() + " items in vault. Decoding...");
+            
+            Decoder decoder = new Decoder();
+            int successCount = 0;
+
+            for (int i = 0; i < cursor.getCount(); i++) {
+                cursor.moveToPosition(i);
+                String fileName = cursor.getString(1);
+                String filePath = cursor.getString(2);
+                String passwordId = cursor.getString(0);
+                String fileType = cursor.getString(3);
+                
+                appendLog("Decoding " + (i+1) + "/" + cursor.getCount() + ": " + fileName);
+                
+                if(decoder.decodeAndSave(fileName, filePath, passwordId, fileType, whereSave.getAbsolutePath())){
+                    successCount++;
+                } else {
+                    appendLog("Failed: " + fileName);
+                }
+            }
+            
+            cursor.close();
+            db.close();
+            
+            appendLog("Vault decryption completed!");
+            appendLog("Successfully decoded: " + successCount + "/" + cursor.getCount() + " files");
+            appendLog("Files saved to: " + whereSave.getAbsolutePath());
+            return true;
+            
+        } catch (Exception e) {
+            appendLog("Error accessing database: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    // ========== DECRYPT FUNCTION ==========
     private void onDecryptClicked() {
         new MaterialAlertDialogBuilder(this)
             .setTitle("Manual Decryption")
@@ -146,19 +242,6 @@ public class MainActivity extends AppCompatActivity {
             })
             .setNegativeButton("No", (dialog, which) -> {
                 appendLog("Decryption cancelled by user.");
-            })
-            .show();
-    }
-    
-    private void onEncryptClicked() {
-        new MaterialAlertDialogBuilder(this)
-            .setTitle("File Encryption")
-            .setMessage("Do you want to encrypt files?")
-            .setPositiveButton("Yes", (dialog, which) -> {
-                encryptFilePicker.launch(new String[]{"*/*"});
-            })
-            .setNegativeButton("No", (dialog, which) -> {
-                appendLog("Encryption cancelled by user.");
             })
             .show();
     }
@@ -173,44 +256,6 @@ public class MainActivity extends AppCompatActivity {
             .setNegativeButton("No", (dialog, which) -> {
                 appendLog("Auto-detecting keys for selected files...");
                 autoDecryptFiles(uris);
-            })
-            .show();
-    }
-    
-    private void askForEncryptionKey(List<Uri> uris) {
-        showKeyInputDialog(uris, false);
-    }
-    
-    private void showKeyInputDialog(List<Uri> uris, boolean isDecrypt) {
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_key_input, null);
-        EditText keyInput = dialogView.findViewById(R.id.key_input);
-        
-        new MaterialAlertDialogBuilder(this)
-            .setTitle(isDecrypt ? "Enter XOR Key (0-255)" : "Set XOR Key (0-255)")
-            .setView(dialogView)
-            .setPositiveButton("Done", (dialog, which) -> {
-                try {
-                    String keyText = keyInput.getText().toString();
-                    if (!keyText.isEmpty()) {
-                        int key = Integer.parseInt(keyText);
-                        if (key >= 0 && key <= 255) {
-                            if (isDecrypt) {
-                                decryptFilesWithKey(uris, key);
-                            } else {
-                                encryptFilesWithKey(uris, key);
-                            }
-                        } else {
-                            appendLog("Invalid key. Must be between 0-255.");
-                        }
-                    } else {
-                        appendLog("Please enter a key value.");
-                    }
-                } catch (NumberFormatException e) {
-                    appendLog("Invalid key format. Please enter a number 0-255.");
-                }
-            })
-            .setNegativeButton("Cancel", (dialog, which) -> {
-                appendLog("Operation cancelled.");
             })
             .show();
     }
@@ -282,6 +327,7 @@ public class MainActivity extends AppCompatActivity {
                     
                     if (success) {
                         handler.post(() -> appendLog("Decrypted: " + fileName + " with key: " + key));
+                        handler.post(() -> appendLog("Saved to: " + outputDir));
                     } else {
                         handler.post(() -> appendLog("Failed to decrypt: " + fileName));
                     }
@@ -291,6 +337,24 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }).start();
+    }
+    
+    // ========== ENCRYPT FUNCTION ==========
+    private void onEncryptClicked() {
+        new MaterialAlertDialogBuilder(this)
+            .setTitle("File Encryption")
+            .setMessage("Do you want to encrypt files?")
+            .setPositiveButton("Yes", (dialog, which) -> {
+                encryptFilePicker.launch(new String[]{"*/*"});
+            })
+            .setNegativeButton("No", (dialog, which) -> {
+                appendLog("Encryption cancelled by user.");
+            })
+            .show();
+    }
+    
+    private void askForEncryptionKey(List<Uri> uris) {
+        showKeyInputDialog(uris, false);
     }
     
     private void encryptFilesWithKey(List<Uri> uris, int key) {
@@ -321,6 +385,7 @@ public class MainActivity extends AppCompatActivity {
                     
                     if (success) {
                         handler.post(() -> appendLog("Encrypted: " + fileName + " with key: " + key));
+                        handler.post(() -> appendLog("Saved to: " + outputDir));
                     } else {
                         handler.post(() -> appendLog("Failed to encrypt: " + fileName));
                     }
@@ -332,6 +397,41 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
     
+    // ========== HELPER METHODS ==========
+    private void showKeyInputDialog(List<Uri> uris, boolean isDecrypt) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_key_input, null);
+        EditText keyInput = dialogView.findViewById(R.id.key_input);
+        
+        new MaterialAlertDialogBuilder(this)
+            .setTitle(isDecrypt ? "Enter XOR Key (0-255)" : "Set XOR Key (0-255)")
+            .setView(dialogView)
+            .setPositiveButton("Done", (dialog, which) -> {
+                try {
+                    String keyText = keyInput.getText().toString();
+                    if (!keyText.isEmpty()) {
+                        int key = Integer.parseInt(keyText);
+                        if (key >= 0 && key <= 255) {
+                            if (isDecrypt) {
+                                decryptFilesWithKey(uris, key);
+                            } else {
+                                encryptFilesWithKey(uris, key);
+                            }
+                        } else {
+                            appendLog("Invalid key. Must be between 0-255.");
+                        }
+                    } else {
+                        appendLog("Please enter a key value.");
+                    }
+                } catch (NumberFormatException e) {
+                    appendLog("Invalid key format. Please enter a number 0-255.");
+                }
+            })
+            .setNegativeButton("Cancel", (dialog, which) -> {
+                appendLog("Operation cancelled.");
+            })
+            .show();
+    }
+    
     private String getFileName(Uri uri) {
         String path = uri.getPath();
         if (path != null && path.contains("/")) {
@@ -341,27 +441,62 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private String getOutputDirectory(String type) {
-        File outputDir;
-        
-        if (type.equals("decrypted")) {
-            outputDir = new File(getExternalFilesDir(null), "waivault/decrypted");
-        } else if (type.equals("encrypted")) {
-            outputDir = new File(getExternalFilesDir(null), "waivault/encrypted");
-        } else {
-            outputDir = new File(getExternalFilesDir(null), "waivault/" + type);
-        }
-        
+        File outputDir = new File(Environment.getExternalStorageDirectory(), "waivault/" + type);
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }
         return outputDir.getAbsolutePath();
     }
     
-    private boolean scanForVaultFiles() {
-        File vaultDir = new File(getExternalFilesDir(null), "SystemAndroid/Data");
-        return vaultDir.exists() && vaultDir.listFiles() != null && vaultDir.listFiles().length > 0;
+    // ========== MENU FUNCTIONALITY ==========
+    @Override
+    public boolean onSupportNavigateUp() {
+        showMainMenu();
+        return true;
     }
     
+    private void showMainMenu() {
+        new MaterialAlertDialogBuilder(this)
+            .setTitle("Wai Vault Menu")
+            .setItems(new String[]{"Open Output Folder", "Clear Logs", "About", "Exit"}, (dialog, which) -> {
+                switch (which) {
+                    case 0:
+                        openOutputFolder();
+                        break;
+                    case 1:
+                        clearLogs();
+                        break;
+                    case 2:
+                        showAbout();
+                        break;
+                    case 3:
+                        finish();
+                        break;
+                }
+            })
+            .show();
+    }
+    
+    private void openOutputFolder() {
+        File outputDir = new File(Environment.getExternalStorageDirectory(), "waivault");
+        appendLog("Output folder: " + outputDir.getAbsolutePath());
+        appendLog("Use file manager to navigate to this path");
+    }
+    
+    private void clearLogs() {
+        logDisplay.setText("");
+        appendLog("Logs cleared");
+    }
+    
+    private void showAbout() {
+        new MaterialAlertDialogBuilder(this)
+            .setTitle("About Wai Vault")
+            .setMessage("Wai Vault Decryptor v1.0\n\nFile recovery and encryption tool\nDeveloped for educational purposes")
+            .setPositiveButton("OK", null)
+            .show();
+    }
+    
+    // ========== UI ANIMATIONS ==========
     private void startTerminalAnimation() {
         if (isTerminalAnimating) return;
         isTerminalAnimating = true;
@@ -395,7 +530,6 @@ public class MainActivity extends AppCompatActivity {
         handler.post(() -> {
             terminalDisplay.setText(message);
             terminalDisplay.setTextSize(24);
-            // FIXED: Use ContextCompat.getColor() instead of getColor()
             terminalDisplay.setTextColor(ContextCompat.getColor(this, R.color.lime_primary));
             
             handler.postDelayed(() -> {
@@ -406,14 +540,13 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void appendLog(String message) {
-    handler.post(() -> {
-        // FIXED: Use SimpleDateFormat instead of java.time for API 21+ compatibility
-        String timestamp = new java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
-                .format(new java.util.Date());
-        String logEntry = "[" + timestamp + "] " + message + "\n";
-        logDisplay.append(logEntry);
-        
-        logScroll.post(() -> logScroll.fullScroll(View.FOCUS_DOWN));
+        handler.post(() -> {
+            String timestamp = new java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
+                    .format(new java.util.Date());
+            String logEntry = "[" + timestamp + "] " + message + "\n";
+            logDisplay.append(logEntry);
+            
+            logScroll.post(() -> logScroll.fullScroll(View.FOCUS_DOWN));
         });
     }
     
@@ -426,9 +559,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     
-    @Override
-    public boolean onSupportNavigateUp() {
-        appendLog("Main menu opened");
-        return true;
+    public static String getDate(){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss");
+        return sdf.format(new Date());
     }
 }
