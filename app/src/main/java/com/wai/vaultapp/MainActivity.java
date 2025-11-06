@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -117,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
         btnEncrypt.setOnClickListener(v -> onEncryptClicked());
     }
     
-    // ========== SCAN VAULT FUNCTION (Like FinderActivity but with waivault folder) ==========
+    // ========== SCAN VAULT FUNCTION ==========
     private void onScanVaultClicked() {
         appendLog("=== SCAN VAULT INITIATED ===");
         startTerminalAnimation();
@@ -288,6 +289,7 @@ public class MainActivity extends AppCompatActivity {
                     
                     if (result[0].equals("SUCCESS")) {
                         handler.post(() -> appendLog("Auto-decrypted: " + fileName + " - " + result[1]));
+                        handler.post(() -> appendLog("Saved to: " + outputDir));
                     } else {
                         handler.post(() -> appendLog("Failed to auto-decrypt: " + fileName + " - " + result[1]));
                     }
@@ -458,18 +460,35 @@ public class MainActivity extends AppCompatActivity {
     private void showMainMenu() {
         new MaterialAlertDialogBuilder(this)
             .setTitle("Wai Vault Menu")
-            .setItems(new String[]{"Open Output Folder", "Clear Logs", "About", "Exit"}, (dialog, which) -> {
+            .setItems(new String[]{
+                "Open Output Folder", 
+                "Change Theme", 
+                "Settings", 
+                "Help", 
+                "Clear Logs", 
+                "About", 
+                "Exit"
+            }, (dialog, which) -> {
                 switch (which) {
                     case 0:
                         openOutputFolder();
                         break;
                     case 1:
-                        clearLogs();
+                        changeTheme();
                         break;
                     case 2:
-                        showAbout();
+                        showSettings();
                         break;
                     case 3:
+                        showHelp();
+                        break;
+                    case 4:
+                        clearLogs();
+                        break;
+                    case 5:
+                        showAbout();
+                        break;
+                    case 6:
                         finish();
                         break;
                 }
@@ -481,6 +500,92 @@ public class MainActivity extends AppCompatActivity {
         File outputDir = new File(Environment.getExternalStorageDirectory(), "waivault");
         appendLog("Output folder: " + outputDir.getAbsolutePath());
         appendLog("Use file manager to navigate to this path");
+    }
+    
+    private void changeTheme() {
+        new MaterialAlertDialogBuilder(this)
+            .setTitle("Change Theme")
+            .setItems(new String[]{
+                "Dark Theme (Current)", 
+                "Light Theme", 
+                "Blue Theme", 
+                "Purple Theme"
+            }, (dialog, which) -> {
+                switch (which) {
+                    case 0:
+                        applyDarkTheme();
+                        break;
+                    case 1:
+                        applyLightTheme();
+                        break;
+                    case 2:
+                        applyBlueTheme();
+                        break;
+                    case 3:
+                        applyPurpleTheme();
+                        break;
+                }
+            })
+            .show();
+    }
+    
+    private void applyDarkTheme() {
+        appendLog("Theme: Dark (Current)");
+    }
+    
+    private void applyLightTheme() {
+        appendLog("Theme: Light - Coming in next update!");
+    }
+    
+    private void applyBlueTheme() {
+        appendLog("Theme: Blue - Coming in next update!");
+    }
+    
+    private void applyPurpleTheme() {
+        appendLog("Theme: Purple - Coming in next update!");
+    }
+    
+    private void showSettings() {
+        View settingsView = getLayoutInflater().inflate(R.layout.dialog_settings, null);
+        
+        new MaterialAlertDialogBuilder(this)
+            .setTitle("Settings")
+            .setView(settingsView)
+            .setPositiveButton("Save", (dialog, which) -> {
+                appendLog("Settings saved");
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
+    }
+    
+    private void showHelp() {
+        new MaterialAlertDialogBuilder(this)
+            .setTitle("Help Guide")
+            .setMessage(
+                "📱 WAI VAULT HELP\n\n" +
+                "🔍 SCAN VAULT:\n" +
+                "• Automatically finds and decrypts vault files\n" +
+                "• Looks in: /SystemAndroid/Data/\n" +
+                "• Saves to: /waivault/decrypted/\n\n" +
+                
+                "🔓 DECRYPT:\n" +
+                "• Manually decrypt any file\n" +
+                "• Auto-detect key or enter manually (0-255)\n" +
+                "• Saves to organized folders\n\n" +
+                
+                "🔐 ENCRYPT:\n" +
+                "• Encrypt files with XOR encryption\n" +
+                "• Set your own key (0-255)\n" +
+                "• Compatible with decrypt function\n\n" +
+                
+                "💾 OUTPUT:\n" +
+                "• All files saved to /storage/emulated/0/waivault/\n" +
+                "• Organized by type: images/, videos/, audio/, etc.\n\n" +
+                
+                "⚠️  Note: For educational purposes only"
+            )
+            .setPositiveButton("Got it!", null)
+            .show();
     }
     
     private void clearLogs() {
